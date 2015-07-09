@@ -11,7 +11,6 @@ import spray.can.websocket.FrameCommandFailed
 import spray.routing.HttpServiceActor
 
 final case class Push(msg: String)
-final case class UserInput(msg: String)
 
 object WebSocketServer {
   def props() = Props(classOf[WebSocketServer])
@@ -32,7 +31,10 @@ class WebSocketServer extends Actor with ActorLogging {
 
     case x @ Push(msg) => workers.headOption.map { _ ! x }
 
-    case x @ UserInput(msg) => context.actorSelection("../step") ! x
+    case x @ UserInput(msg) => {
+      //log.debug("UserInput " + msg.get + " received")
+      context.actorSelection("../input") ! x
+    }
   }
 }
 
@@ -68,13 +70,15 @@ object Main {
 
     //Actor creation and dependency injection
     val server = system.actorOf(WebSocketServer.props(), "websocket")
-    system.actorOf(Step.props(), "step")
-    system.actorOf(Step.props(), "step")
-
+    val step = system.actorOf(Step.props(), "step")
+    val input = system.actorOf(Input.props(), "input")
+    val state = system.actorOf(State.props(), "state")
 
     IO(UHttp) ! Http.Bind(server, "localhost", 8080)
 
-    system.shutdown()
+    server ! Push("initialized")
+
+    //system.shutdown()
     system.awaitTermination()
   }
 }
