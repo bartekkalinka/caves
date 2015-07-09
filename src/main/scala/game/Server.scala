@@ -44,7 +44,7 @@ class WebSocketWorker(val serverConnection: ActorRef) extends HttpServiceActor
   override def receive = handshaking orElse businessLogicNoUpgrade orElse closeLogic
 
   def businessLogic: Receive = {
-    case x @ (_: TextFrame) => context.actorSelection("..") ! UserInput(x.payload.utf8String)
+    case x @ (_: TextFrame) => context.actorSelection("..") ! UserInput(Some(x.payload.utf8String))
 
     case Push(msg) => send(TextFrame(msg))
 
@@ -68,11 +68,11 @@ object Main {
 
     //Actor creation and dependency injection
     val server = system.actorOf(WebSocketServer.props(), "websocket")
-    val stepActor = system.actorOf(StepActor.props(), "step")
+    system.actorOf(Step.props(), "step")
+    system.actorOf(Step.props(), "step")
+
 
     IO(UHttp) ! Http.Bind(server, "localhost", 8080)
-
-    Game.play(stepActor)
 
     system.shutdown()
     system.awaitTermination()

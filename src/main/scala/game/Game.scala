@@ -9,10 +9,10 @@ case class UserInput(dir: Option[String])
 case class StepData(state: StateData, input: UserInput)
 case class StateMod(addToPrefix: Int)
 
-object StepActor {
-  def props() = Props(classOf[StepActor])
+object Step {
+  def props() = Props(classOf[Step])
 }
-class StepActor extends Actor with ActorLogging {
+class Step extends Actor with ActorLogging {
   def receive = {
     case StepData(state, input) => {
       val addToPrefix = input.dir match {
@@ -28,12 +28,13 @@ object Input {
   def props() = Props(classOf[State])
 }
 class Input extends Actor with ActorLogging {
-  var userInput: UserInput = UserInput(None)
+  var userInput: Option[String] = None
 
   def receive = {
-    case ui: UserInput => userInput = ui
+    case UserInput(ui) => userInput = ui
     case sd: StateData => {
-      context.actorSelection("../step") ! StepData(sd, userInput)
+      context.actorSelection("../step") ! StepData(sd, UserInput(userInput))
+      userInput = None
     }
   }
 }
