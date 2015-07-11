@@ -1,10 +1,13 @@
+$(document).ready(function() {
 var wsUri = "ws://localhost:8080/";
-var output;
+var canvas = document.getElementById("canv");
+var ctx = canvas.getContext("2d");
+
+// INIT MODULE
 function init() {
-    output = document.getElementById("output");
-    testWebSocket();
+    initWebSocket();
 }
-function testWebSocket() {
+function initWebSocket() {
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) {
         onOpen(evt)
@@ -19,27 +22,32 @@ function testWebSocket() {
         onError(evt)
     };
 }
+// WEBSOCKET EVENTS MODULE
 function onOpen(evt) {
 }
 function onClose(evt) {
 }
 function onMessage(evt) {
-   $("#msg").html(evt.data)
+   x = 250 + evt.data * 20
+   clearCanvas();
+   drawSquare(x, 250, "rgb(255,0,0)");
 }
 function onError(evt) {
-    writeToScreen('<span style="color: red;">ERROR:</span> ' + evt.data);
 }
 function doSend(message) {
     websocket.send(message);
 }
-function writeToScreen(message) {
-    var pre = document.createElement("p");
-    pre.style.wordWrap = "break-word";
-    pre.innerHTML = message;
-    output.appendChild(pre);
-}
-window.addEventListener("load", init, false);
 
+// DRAWING MODULE
+function clearCanvas() {
+    ctx.fillStyle = "rgb(0,0,0)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+function drawSquare(x, y, color) {
+    ctx.fillStyle = color;
+    ctx.fillRect(x, y, 20, 20);
+}
+// USER INPUT MODULE
 function doKeyDown(e) {
     switch (e.keyCode)
     {
@@ -51,4 +59,6 @@ function doKeyDown(e) {
         break;
     }
 }
-window.addEventListener( "keydown", doKeyDown, true);
+window.addEventListener("keydown", doKeyDown, true);
+init();
+})

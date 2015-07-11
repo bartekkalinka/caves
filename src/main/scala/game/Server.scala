@@ -10,7 +10,7 @@ import spray.http.HttpRequest
 import spray.can.websocket.FrameCommandFailed
 import spray.routing.HttpServiceActor
 
-final case class Push(msg: String)
+final case class Push(x: Int)
 
 object WebSocketServer {
   def props() = Props(classOf[WebSocketServer])
@@ -48,7 +48,7 @@ class WebSocketWorker(val serverConnection: ActorRef) extends HttpServiceActor
   def businessLogic: Receive = {
     case x @ (_: TextFrame) => context.actorSelection("..") ! UserInput(Some(x.payload.utf8String))
 
-    case Push(msg) => send(TextFrame(msg))
+    case Push(x) => send(TextFrame(x.toString))
 
     case x: FrameCommandFailed =>
       log.error("frame command failed", x)
@@ -68,7 +68,6 @@ object Main {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
 
-    //Actor creation and dependency injection
     val server = system.actorOf(WebSocketServer.props(), "websocket")
     val step = system.actorOf(Step.props(), "step")
     val input = system.actorOf(Input.props(), "input")
@@ -76,9 +75,6 @@ object Main {
 
     IO(UHttp) ! Http.Bind(server, "localhost", 8080)
 
-    server ! Push("initialized")
-
-    //system.shutdown()
     system.awaitTermination()
   }
 }
