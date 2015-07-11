@@ -3,27 +3,33 @@ package game
 import akka.actor._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Random
 
 case object Tick
-case class StateData(x: Int, letter: String)
+case class StateData(player: Player, other: Other, score: Score)
 case class UserInput(dir: Option[String])
 case class StepData(state: StateData, input: UserInput)
-case class StateMod(addToPrefix: Int)
+
+sealed trait OtherMod
+case class NewOther(x: Int) extends OtherMod
+case class OtherMove(yMod: Int) extends OtherMod
+case class StateMod(playerXMod: Int, otherMod: OtherMod)
 
 object Step {
   def props() = Props(classOf[Step])
 }
 class Step extends Actor with ActorLogging {
-  //TODO layers of state modification, one triggering next
+  //TODO future: layers of state modification, one triggering next
   def receive = {
     case StepData(state, input) => {
       log.debug("StepData received, input = " + input.dir.getOrElse("null"))
-      val addToPrefix = input.dir match {
+      val playerXMod = input.dir match {
           case Some ("right") => 1
           case Some("left") => -1
-          case None => 0
+          case _ => 0
       }
-      context.actorSelection("../state") ! StateMod(addToPrefix)
+      val otherMod = if(state.other.y > 0) OtherMove(-1) else NewOther(Random.nextInt(37))
+      context.actorSelection("../state") ! StateMod(playerXMod, otherMod)
     }
   }
 }
@@ -49,35 +55,32 @@ class Input extends Actor with ActorLogging {
 
 object State {
   def props() = Props(classOf[State])
+
+  def otherModApply(other: Other, otherMod: OtherMod) = otherMod match {
+    case NewOther(x) => Other(x, 25)
+    case OtherMove(yMod) => other.copy(y = other.y + yMod)
+  }
 }
 class State extends Actor with ActorLogging {
-  val stream = Stream.iterate(0)(x => if(x == 4) 0 else x + 1)
-  val words = Array("g", "w", "t", "e", "h")
-  var x: Int = 0
-  var index: Int = 0
+  var player = Player(0)
+  var other = Other(15, -1)
 
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
 
   def receive = {
-    case StateMod(addToPrefix) => {
-      log.debug("StateMod received, addToPrefix = " + addToPrefix)
+    case StateMod(playerXMod, otherMod) => {
+      log.debug("StateMod received")
       //apply modifications
-      //TODO state should be the last layer of state modification
-      //TODO separate into a method
-      //TODO move index modification to Step
-      x += addToPrefix
-      log.debug("x :" + x)
-      //change index
-      index = if(index == 4) 0 else index + 1
+      player = player.copy(x = player.x + playerXMod)
+      other = State.otherModApply(other, otherMod)
 
       //broadcast state to client
-      //TODO separate into a method
-      context.actorSelection("../websocket") ! Push(x)
+      context.actorSelection("../websocket") ! Broadcast(player, other)
     }
 
     case Tick => {
       log.debug("Tick received")
-      context.actorSelection("../input") ! StateData(x, words(index))
+      context.actorSelection("../input") ! StateData(player, other)
     }
   }
 }

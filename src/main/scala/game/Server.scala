@@ -9,8 +9,21 @@ import spray.can.websocket.frame.TextFrame
 import spray.http.HttpRequest
 import spray.can.websocket.FrameCommandFailed
 import spray.routing.HttpServiceActor
+import spray.json._
 
-final case class Push(x: Int)
+
+case class Player(x: Int)
+case class Other(x: Int, y: Int)
+case class Score(points: Int)
+case class Broadcast(player: Player, other: Other, score: Score)
+
+object BroadcastJsonProtocol extends DefaultJsonProtocol {
+  implicit val playerFormat = jsonFormat1(Player.apply)
+  implicit val otherFormat = jsonFormat2(Other.apply)
+  implicit val scoreFormat = jsonFormat1(Score.apply)
+  implicit val broadcastFormat = jsonFormat3(Broadcast.apply)
+}
+
 
 object WebSocketServer {
   def props() = Props(classOf[WebSocketServer])
@@ -29,9 +42,9 @@ class WebSocketServer extends Actor with ActorLogging {
       log.info("register " + workerName)
       serverConnection ! Http.Register(worker)
 
-    case x @ Push(msg) => workers.headOption.map { _ ! x }
+    case x: Broadcast => workers.headOption.map { _ ! x }
 
-    case x @ UserInput(msg) => {
+    case x: UserInput => {
       //log.debug("UserInput " + msg.get + " received")
       context.actorSelection("../input") ! x
     }
@@ -43,12 +56,14 @@ object WebSocketWorker {
 }
 class WebSocketWorker(val serverConnection: ActorRef) extends HttpServiceActor
   with websocket.WebSocketServerWorker {
+  import BroadcastJsonProtocol._
+
   override def receive = handshaking orElse businessLogicNoUpgrade orElse closeLogic
 
   def businessLogic: Receive = {
     case x @ (_: TextFrame) => context.actorSelection("..") ! UserInput(Some(x.payload.utf8String))
 
-    case Push(x) => send(TextFrame(x.toString))
+    case x: Broadcast => send(TextFrame(x.toJson.toString()))
 
     case x: FrameCommandFailed =>
       log.error("frame command failed", x)
