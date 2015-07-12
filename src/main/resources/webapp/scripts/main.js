@@ -31,7 +31,7 @@ function onMessage(evt) {
    $("#debug").html(evt.data)
    var obj = JSON.parse(evt.data)
    clearCanvas();
-   drawSquare(240 + obj.player.x * 20, 20, "rgb(255,0,0)");
+   drawSquare(obj.player.x * 20, 20, "rgb(255,0,0)");
    drawSquare(obj.other.x * 20, obj.other.y * 20, "rgb(0,0,255)")
 }
 function onError(evt) {

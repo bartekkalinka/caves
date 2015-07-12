@@ -11,20 +11,6 @@ import spray.can.websocket.FrameCommandFailed
 import spray.routing.HttpServiceActor
 import spray.json._
 
-
-case class Player(x: Int)
-case class Other(x: Int, y: Int)
-case class Score(points: Int)
-case class Broadcast(player: Player, other: Other, score: Score)
-
-object BroadcastJsonProtocol extends DefaultJsonProtocol {
-  implicit val playerFormat = jsonFormat1(Player.apply)
-  implicit val otherFormat = jsonFormat2(Other.apply)
-  implicit val scoreFormat = jsonFormat1(Score.apply)
-  implicit val broadcastFormat = jsonFormat3(Broadcast.apply)
-}
-
-
 object WebSocketServer {
   def props() = Props(classOf[WebSocketServer])
 }
@@ -84,9 +70,9 @@ object Main {
     implicit val system = ActorSystem()
 
     val server = system.actorOf(WebSocketServer.props(), "websocket")
-    val step = system.actorOf(Step.props(), "step")
-    val input = system.actorOf(Input.props(), "input")
-    val state = system.actorOf(State.props(), "state")
+    system.actorOf(Step.props(), "step")
+    system.actorOf(Input.props(), "input")
+    system.actorOf(State.props(), "state")
 
     IO(UHttp) ! Http.Bind(server, "localhost", 8080)
 
