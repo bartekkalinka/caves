@@ -10,10 +10,9 @@ import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
 
 import upickle._
-import game.Broadcast
 
 class Webservice(gameActor: ActorRef)(implicit fm: Materializer, system: ActorSystem) extends Directives {
-  val theFlow = WsFlow.create(gameActor)
+  val theFlow = WsFlow(gameActor)
 
   def route =
     get {
@@ -30,15 +29,9 @@ class Webservice(gameActor: ActorRef)(implicit fm: Materializer, system: ActorSy
 
   def websocketFlow(sender: String): Flow[Message, Message, Unit] =
     Flow[Message]
-      .collect {
-        case TextMessage.Strict(msg) => msg // unpack incoming WS text messages...
-      }
+      .collect { case TextMessage.Strict(msg) => game.UserInput(Some(msg)) } // unpack incoming WS text messages...
       .via(theFlow.wsFlow(sender)) // ... and route them through the gameFlow ...
-      .map {
-        case c : Broadcast => {
-          TextMessage.Strict(write(c)) // ... pack outgoing messages into WS JSON messages ...
-        }
-      }
+      .map{ case b: game.Broadcast => TextMessage.Strict(write(b)) } // ... pack outgoing messages into WS JSON messages ...
       .via(reportErrorsFlow) // ... then log any processing errors on stdin
 
   def reportErrorsFlow[T]: Flow[T, T, Unit] =
