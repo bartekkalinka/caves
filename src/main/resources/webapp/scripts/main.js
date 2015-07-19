@@ -1,5 +1,5 @@
 $(document).ready(function() {
-var wsUri = "ws://localhost:8080/";
+var wsUri = "ws://localhost:8080/game?name=aaa";
 var canvas = document.getElementById("canv");
 var ctx = canvas.getContext("2d");
 

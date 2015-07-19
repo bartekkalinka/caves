@@ -11,14 +11,11 @@ scalacOptions += "-deprecation"
 Revolver.settings
 
 libraryDependencies ++= {
-  val akkaV = "2.3.11"
-  val sprayV = "1.3.3"
+  val akkaV = "2.3.12"
   Seq(
-    "io.spray"            %%  "spray-can"     % sprayV,
-    "io.spray"            %%  "spray-routing" % sprayV,
-    "io.spray"            %%  "spray-json"    % "1.3.2",
-    "com.typesafe.akka"   %%  "akka-actor"    % akkaV,
-    "com.wandoulabs.akka" %%  "spray-websocket" % "0.1.4"
+    "com.typesafe.akka" %% "akka-actor" % akkaV,
+    "com.typesafe.akka" %% "akka-http-experimental" % "1.0",
+    "com.lihaoyi" %% "upickle" % "0.2.8"
   )
 }
 

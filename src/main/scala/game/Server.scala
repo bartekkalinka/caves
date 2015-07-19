@@ -1,81 +1,57 @@
 package game
 
-import akka.actor.{ ActorSystem, Actor, Props, ActorLogging, ActorRef, ActorRefFactory }
-import akka.io.IO
-import spray.can.Http
-import spray.can.server.UHttp
-import spray.can.websocket
-import spray.can.websocket.frame.TextFrame
-import spray.http.HttpRequest
-import spray.can.websocket.FrameCommandFailed
-import spray.routing.HttpServiceActor
-import spray.json._
+import akka.actor._
+import akka.http.scaladsl.Http
+import akka.stream.ActorMaterializer
+import scala.util.{ Success, Failure }
+import websockets._
+import scala.concurrent.ExecutionContext.Implicits.global
 
 object WebSocketServer {
   def props() = Props(classOf[WebSocketServer])
 }
 class WebSocketServer extends Actor with ActorLogging {
-  var workers: List[ActorRef] = List()
+  /* code patterns copied from https://github.com/jrudolph/akka-http-scala-js-websocket-chat*/
+  var subscribers = Set.empty[ActorRef]
 
-  def receive = {
-    // when a new connection comes in we register a WebSocketConnection actor as the per connection handler
-    case Http.Connected(remoteAddress, localAddress) =>
-      val serverConnection = sender()
-      log.info("connected")
-      val workerName = "worker" + workers.length
-      val worker = context.actorOf(WebSocketWorker.props(serverConnection), workerName)
-      workers ::= worker
-      log.info("register " + workerName)
-      serverConnection ! Http.Register(worker)
-
-    case x: Broadcast => workers.headOption.map { _ ! x }
-
+  def receive: Receive = {
+    case NewParticipant(name, subscriber) =>
+      context.watch(subscriber)
+      subscribers += subscriber
+      log.debug(s"$name joined!")
     case x: UserInput => {
       //log.debug("UserInput " + msg.get + " received")
       context.actorSelection("../input") ! x
     }
-  }
-}
-
-object WebSocketWorker {
-  def props(serverConnection: ActorRef) = Props(classOf[WebSocketWorker], serverConnection)
-}
-class WebSocketWorker(val serverConnection: ActorRef) extends HttpServiceActor
-  with websocket.WebSocketServerWorker {
-  import BroadcastJsonProtocol._
-
-  override def receive = handshaking orElse businessLogicNoUpgrade orElse closeLogic
-
-  def businessLogic: Receive = {
-    case x @ (_: TextFrame) => context.actorSelection("..") ! UserInput(Some(x.payload.utf8String))
-
-    case x: Broadcast => send(TextFrame(x.toJson.toString()))
-
-    case x: FrameCommandFailed =>
-      log.error("frame command failed", x)
-
-    case x: HttpRequest => // do something
-  }
-
-  def businessLogicNoUpgrade: Receive = {
-    implicit val refFactory: ActorRefFactory = context
-    runRoute {
-      getFromResourceDirectory("webapp")
-    }
+    case b: Broadcast => subscribers.foreach(_ ! b)
+    case ParticipantLeft(person) => log.debug(s"$person left!")
+    case Terminated(sub)         => subscribers -= sub // clean up dead subscribers
   }
 }
 
 object Main {
   def main(args: Array[String]): Unit = {
     implicit val system = ActorSystem()
+    implicit val materializer = ActorMaterializer()
 
     val server = system.actorOf(WebSocketServer.props(), "websocket")
     system.actorOf(Step.props(), "step")
     system.actorOf(Input.props(), "input")
     system.actorOf(State.props(), "state")
 
-    IO(UHttp) ! Http.Bind(server, "localhost", 8080)
+    val interface = "localhost"
+    val port = 8080
+    val service = new Webservice(server)
+    val binding = Http().bindAndHandle(service.route, interface, port)
 
-    system.awaitTermination()
+    binding.onComplete {
+      case Success(binding) ⇒
+        val localAddress = binding.localAddress
+        println(s"Server is listening on ${localAddress.getHostName}:${localAddress.getPort}")
+        system.awaitTermination()
+      case Failure(e) ⇒
+        println(s"Binding failed with ${e.getMessage}")
+        system.shutdown()
+    }
   }
 }

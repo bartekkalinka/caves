@@ -4,17 +4,10 @@ import akka.actor._
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Random
-import spray.json._
 
 case class Player(x: Int)
 case class Other(x: Int, y: Int)
 case class Broadcast(player: Player, other: Other, score: Int)
-
-object BroadcastJsonProtocol extends DefaultJsonProtocol {
-  implicit val playerFormat = jsonFormat1(Player.apply)
-  implicit val otherFormat = jsonFormat2(Other.apply)
-  implicit val broadcastFormat = jsonFormat3(Broadcast.apply)
-}
 
 case object Tick
 case class Delay(counter: Int)
