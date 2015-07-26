@@ -12,6 +12,6 @@ object ShapeGenWrapper {
     if(current.level >= neededLevel) current else getNoise(x, y, true)
   }
 
-  def get(x: Int, y: Int) = getNoise(x, y).noise.map { arr => arr.foldLeft("")((s, n) => s +(if(n >= 500) "1" else "0")) }
+  def get(x: Int, y: Int): Array[String] = getNoise(x, y).noise.map { arr => arr.foldLeft("")((s, n) => s +(if(n >= 500) "1" else "0")) }
 }
 

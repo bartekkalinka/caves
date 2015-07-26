@@ -7,7 +7,7 @@ import scala.util.Random
 
 case class Player(x: Int)
 case class Other(x: Int, y: Int)
-case class Broadcast(player: Player, other: Other, score: Int)
+case class Broadcast(player: Player, other: Other, score: Int, shape: Array[String])
 
 case object Tick
 case class Delay(counter: Int)
@@ -80,6 +80,7 @@ class State extends Actor with ActorLogging {
   var player = Player(15)
   var other = OtherState(Other(15, -1), Delay(1))
   var score = 0
+  var terrainCoord = (0, 0)
 
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
 
@@ -90,9 +91,10 @@ class State extends Actor with ActorLogging {
       player = player.copy(x = player.x + playerXMod)
       other = State.otherModApply(other, otherMod)
       score += scoreMod
+      val terrain = (ShapeGenWrapper.get _).tupled(terrainCoord)
 
       //broadcast state to client
-      context.actorSelection("../websocket") ! Broadcast(player, other.state, score)
+      context.actorSelection("../websocket") ! Broadcast(player, other.state, score, terrain)
     }
 
     case Tick => {
