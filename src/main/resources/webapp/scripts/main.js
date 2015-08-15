@@ -34,11 +34,9 @@ function onClose(evt) {
 function onMessage(evt) {
    var obj = JSON.parse(evt.data)
    draw.clearCanvas();
-   //draw.drawSquare(obj.player.x * 20, 20, "rgb(255,0,0)");
-   //draw.drawSquare(obj.other.x * 20, obj.other.y * 20, "rgb(0,0,255)")
    $("#debug").html(obj.shape.length + " " + obj.shape[0])
    draw.saveShape(obj.shape, 0, 0);
-   draw.drawShape(0, 0);
+   draw.drawShape(0, 0, 0 - obj.player.x * 5, 0 - obj.player.y * 5);
 }
 function onError(evt) {
 }
@@ -53,8 +51,14 @@ function doKeyDown(e) {
   case 37:
       doSend("left");
       break;
+  case 38:
+      doSend("up");
+      break;
   case 39:
       doSend("right");
+      break;
+  case 40:
+      doSend("down");
       break;
   }
 }

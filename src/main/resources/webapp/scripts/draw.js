@@ -38,7 +38,7 @@ define( ['scripts/globals'], function (glob) {
     function isShapeTileSet(shape, j, i) {
       return shape[j][i] === "1";
     }
-    function drawShape(dx, dy) {
+    function drawShape(dx, dy, x, y) {
       clearShapeSquare(dx, dy);
       ctx.fillStyle = "rgb(255,0,0)";
       var shape = getShape(dx, dy);
@@ -50,8 +50,8 @@ define( ['scripts/globals'], function (glob) {
         for(j=0; j<shapeTiles; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
             ctx.fillRect(
-              pixelsOffset[0] + tilePixels * j,
-              pixelsOffset[1] + tilePixels * i, tilePixels, tilePixels
+              x + pixelsOffset[0] + tilePixels * j,
+              y + pixelsOffset[1] + tilePixels * i, tilePixels, tilePixels
             );
           }
         }
