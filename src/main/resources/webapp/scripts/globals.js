@@ -1,6 +1,6 @@
 define( {
-    tilesize : 64,
-    size : 6,
-    detail : 3,
-    shapeTab : [],
+    initTilePixels : 64,
+    initShapeTiles : 6,
+    targetDetail : 3,
+    grid : [],
 });

@@ -3,61 +3,55 @@ define( ['scripts/globals'], function (glob) {
     var ctx = canvas.getContext("2d");
 
     // DRAWING MODULE
-    // drawing single squares
     function clearCanvas() {
         ctx.fillStyle = "rgb(0,0,0)";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
-    function drawSquare(x, y, color) {
-        ctx.fillStyle = color;
-        ctx.fillRect(x, y, 20, 20);
+    function shapePixels() {
+      return glob.initShapeTiles * glob.initTilePixels
     }
-    // drawing terrain
-    function squareSize() {
-      return glob.size * glob.tilesize
-    }
-    function initshapeTab(n) {
-        glob.shapeTab = new Array();
-        for(i = 0; i < n; i++) {
-            glob.shapeTab[i] = new Array();
+    function initGrid(gridShapes) {
+        glob.grid = new Array();
+        for(i = 0; i < gridShapes; i++) {
+            glob.grid[i] = new Array();
         }
     }
-    function saveSquare(shapeData, dx, dy) {
-        var obj = shapeData;
-        obj.detail = glob.detail;
-        glob.shapeTab[dx][dy] = obj;
+    function saveShape(shape, dx, dy) {
+        var obj = shape;
+        obj.detail = glob.targetDetail;
+        glob.grid[dx][dy] = obj;
     }
-    function getSquareShape(dx, dy) {
-        return glob.shapeTab[dx][dy];
+    function getShape(dx, dy) {
+        return glob.grid[dx][dy];
     }
-    function getSquareDetail(dx, dy) {
-        return glob.shapeTab[dx][dy].detail;
+    function getShapeDetail(dx, dy) {
+        return glob.grid[dx][dy].detail;
     }
-    function getSquareOffset(dx, dy) {
-        return [dx * squareSize(), dy * squareSize()];
+    function getGridPixelsOffset(dx, dy) {
+        return [dx * shapePixels(), dy * shapePixels()];
     }
-    function clearSquare(dx, dy) {
-      var offset = getSquareOffset(dx, dy);
+    function clearShapeSquare(dx, dy) {
+      var pixelsOffset = getGridPixelsOffset(dx, dy);
       ctx.fillStyle = "rgb(0,0,0)";
-      ctx.fillRect(offset[0], offset[1], squareSize(), squareSize());
+      ctx.fillRect(pixelsOffset[0], pixelsOffset[1], shapePixels(), shapePixels());
     }
     function isShapeTileSet(shape, j, i) {
       return shape[j][i] === "1";
     }
     function drawShape(dx, dy) {
-      clearSquare(dx, dy);
+      clearShapeSquare(dx, dy);
       ctx.fillStyle = "rgb(255,0,0)";
-      var shape = getSquareShape(dx, dy);
-      var offset = getSquareOffset(dx, dy);
-      var detailScale = Math.pow(2, getSquareDetail(dx, dy));
-      var size = glob.size * detailScale;
-      var tilesize = glob.tilesize / detailScale;
-      for(i=0; i<size; i+=1) {
-        for(j=0; j<size; j+=1) {
+      var shape = getShape(dx, dy);
+      var pixelsOffset = getGridPixelsOffset(dx, dy);
+      var detailScale = Math.pow(2, getShapeDetail(dx, dy));
+      var shapeTiles = glob.initShapeTiles * detailScale;
+      var tilePixels = glob.initTilePixels / detailScale;
+      for(i=0; i<shapeTiles; i+=1) {
+        for(j=0; j<shapeTiles; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
             ctx.fillRect(
-              offset[0] + tilesize * j,
-              offset[1] + tilesize * i, tilesize, tilesize
+              pixelsOffset[0] + tilePixels * j,
+              pixelsOffset[1] + tilePixels * i, tilePixels, tilePixels
             );
           }
         }
@@ -65,10 +59,9 @@ define( ['scripts/globals'], function (glob) {
     }
 
     return {
-        "initshapeTab" : initshapeTab,
-        "saveSquare" : saveSquare,
+        "initGrid" : initGrid,
+        "saveShape" : saveShape,
         "clearCanvas" : clearCanvas,
-        "drawSquare" : drawSquare,
         "drawShape" : drawShape
     };
 });

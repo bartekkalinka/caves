@@ -8,7 +8,7 @@ var wsUri = "ws://localhost:8080/game?name=aaa";
 
 // INIT MODULE
 function init() {
-    draw.initshapeTab(2);
+    draw.initGrid(2);
     initWebSocket();
 }
 function initWebSocket() {
@@ -34,10 +34,10 @@ function onClose(evt) {
 function onMessage(evt) {
    var obj = JSON.parse(evt.data)
    draw.clearCanvas();
-   draw.drawSquare(obj.player.x * 20, 20, "rgb(255,0,0)");
-   draw.drawSquare(obj.other.x * 20, obj.other.y * 20, "rgb(0,0,255)")
+   //draw.drawSquare(obj.player.x * 20, 20, "rgb(255,0,0)");
+   //draw.drawSquare(obj.other.x * 20, obj.other.y * 20, "rgb(0,0,255)")
    $("#debug").html(obj.shape.length + " " + obj.shape[0])
-   draw.saveSquare(obj.shape, 0, 0);
+   draw.saveShape(obj.shape, 0, 0);
    draw.drawShape(0, 0);
 }
 function onError(evt) {
