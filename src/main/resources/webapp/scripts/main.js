@@ -34,9 +34,13 @@ function onClose(evt) {
 function onMessage(evt) {
    var obj = JSON.parse(evt.data)
    draw.clearCanvas();
-   $("#debug").html(obj.shape.length + " " + obj.shape[0])
-   draw.saveShape(obj.shape, 0, 0);
-   draw.drawShape(0, 0, 0 - obj.player.x * 5, 0 - obj.player.y * 5);
+   $("#debug").html(obj.shapes.length)
+   var shape
+   for(k=0; k<obj.shapes.length; k+=1) {
+     shape = obj.shapes[k];
+     draw.saveShape(shape.tiles, shape.dx, shape.dy);
+     draw.drawShape(shape.dx, shape.dy, 0 - obj.player.x * 5, 0 - obj.player.y * 5)
+   }
 }
 function onError(evt) {
 }
