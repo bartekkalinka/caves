@@ -7,7 +7,8 @@ import scala.util.Random
 
 case class Player(x: Int, y: Int)
 case class Shape(dx: Int, dy: Int, tiles: Array[String])
-case class Broadcast(player: Player, shapes: Array[Shape])
+case class ScreenOffset(x: Int, y: Int)
+case class Broadcast(player: Player, screen: ScreenOffset, shapes: Array[Shape])
 
 case object Tick
 case class Delay(counter: Int)
@@ -30,10 +31,10 @@ class Step extends Actor with ActorLogging {
     case StepData(state, input) => {
       log.debug("StepData received, input = " + input.dir.getOrElse("null"))
       val playerMove = input.dir match {
-          case Some("right") => PlayerMove(1, 0)
-          case Some("up") => PlayerMove(0, -1)
-          case Some("left") => PlayerMove(-1, 0)
-          case Some("down") => PlayerMove(0, 1)
+          case Some("right") => PlayerMove(Const.moveStep, 0)
+          case Some("up") => PlayerMove(0, -Const.moveStep)
+          case Some("left") => PlayerMove(-Const.moveStep, 0)
+          case Some("down") => PlayerMove(0, Const.moveStep)
           case _ => PlayerMove(0, 0)
       }
       context.actorSelection("../state") ! StateMod(playerMove)
@@ -60,25 +61,39 @@ class Input extends Actor with ActorLogging {
   }
 }
 
+object Const {
+  val initTilePixels = 64
+  val initShapeTiles = 6
+  val shapePixels = initTilePixels * initShapeTiles
+  val moveStep = 5
+}
+
 object State {
   def props() = Props(classOf[State])
 }
 class State extends Actor with ActorLogging {
   var player = Player(15, 0)
   var score = 0
-  val terrainCoords = List((0, 0), (0, 1), (1, 0), (1, 1))
 
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
+
+  def calculateScreen = {
+    val sh = Const.shapePixels
+    val (shapeOffs, screenOffs) = player match { case Player(x, y) => ((x / sh, y / sh), ScreenOffset(x % sh, y % sh))}
+    val terrainCoords = shapeOffs match { case (dx, dy) => List((dx, dy), (dx, dy + 1), (dx + 1, dy), (dx + 1, dy + 1)) }
+    val terrain = terrainCoords.map { case (dx, dy) => Shape(dx - shapeOffs._1, dy - shapeOffs._2, ShapeGenWrapper.get(dx, dy)) }
+    (terrain.toArray, screenOffs)
+  }
 
   def receive = {
     case StateMod(playerMove) => {
       log.debug("StateMod received")
       //apply modifications
       player = player.copy(x = player.x + playerMove.xMod, y = player.y + playerMove.yMod)
-      val terrain = terrainCoords.map(coord => Shape(coord._1, coord._2, (ShapeGenWrapper.get _).tupled(coord))).toArray
 
       //broadcast state to client
-      context.actorSelection("../websocket") ! Broadcast(player, terrain)
+      val (terrain, screenOffset) = calculateScreen
+      context.actorSelection("../websocket") ! Broadcast(player, screenOffset, terrain)
     }
 
     case Tick => {

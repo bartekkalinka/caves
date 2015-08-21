@@ -44,7 +44,7 @@ function onMessage(evt) {
    for(i=0; i<obj.shapes.length; i+=1) {
      shape = obj.shapes[i];
      draw.saveShape(shape.tiles, shape.dx, shape.dy);
-     draw.drawShape(shape.dx, shape.dy, 0 - obj.player.x * 5, 0 - obj.player.y * 5)
+     draw.drawShape(shape.dx, shape.dy, 0 - obj.screen.x, 0 - obj.screen.y)
    }
 }
 function onError(evt) {
