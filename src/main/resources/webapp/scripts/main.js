@@ -1,3 +1,5 @@
+"use strict";
+
 require.config({
     urlArgs: "bust=" + (new Date()).getTime()
 });
@@ -5,6 +7,7 @@ require.config({
 requirejs(['scripts/globals', 'scripts/draw'], function(glob, draw) {
 $(document).ready(function() {
 var wsUri = "ws://localhost:8080/game?name=aaa";
+var websocket;
 
 // INIT MODULE
 function init() {
@@ -12,6 +15,7 @@ function init() {
     initWebSocket();
 }
 function initWebSocket() {
+
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) {
         onOpen(evt)
@@ -36,8 +40,9 @@ function onMessage(evt) {
    draw.clearCanvas();
    $("#debug").html(obj.shapes.length)
    var shape
-   for(k=0; k<obj.shapes.length; k+=1) {
-     shape = obj.shapes[k];
+   var i
+   for(i=0; i<obj.shapes.length; i+=1) {
+     shape = obj.shapes[i];
      draw.saveShape(shape.tiles, shape.dx, shape.dy);
      draw.drawShape(shape.dx, shape.dy, 0 - obj.player.x * 5, 0 - obj.player.y * 5)
    }

@@ -1,3 +1,5 @@
+"use strict";
+
 define( ['scripts/globals'], function (glob) {
     var canvas = document.getElementById("canv");
     var ctx = canvas.getContext("2d");
@@ -11,6 +13,7 @@ define( ['scripts/globals'], function (glob) {
       return glob.initShapeTiles * glob.initTilePixels
     }
     function initGrid(gridShapes) {
+        var i
         glob.grid = new Array();
         for(i = 0; i < gridShapes; i++) {
             glob.grid[i] = new Array();
@@ -46,6 +49,7 @@ define( ['scripts/globals'], function (glob) {
       var detailScale = Math.pow(2, getShapeDetail(dx, dy));
       var shapeTiles = glob.initShapeTiles * detailScale;
       var tilePixels = glob.initTilePixels / detailScale;
+      var i, j
       for(i=0; i<shapeTiles; i+=1) {
         for(j=0; j<shapeTiles; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
