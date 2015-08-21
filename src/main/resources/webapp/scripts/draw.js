@@ -33,16 +33,16 @@ define( ['scripts/globals'], function (glob) {
     function getGridPixelsOffset(dx, dy) {
         return [dx * shapePixels(), dy * shapePixels()];
     }
-    function clearShapeSquare(dx, dy) {
+    function clearShapeSquare(dx, dy, x, y) {
       var pixelsOffset = getGridPixelsOffset(dx, dy);
       ctx.fillStyle = "rgb(0,0,0)";
-      ctx.fillRect(pixelsOffset[0], pixelsOffset[1], shapePixels(), shapePixels());
+      ctx.fillRect(x + pixelsOffset[0], y + pixelsOffset[1], shapePixels(), shapePixels());
     }
     function isShapeTileSet(shape, j, i) {
       return shape[j][i] === "1";
     }
     function drawShape(dx, dy, x, y) {
-      clearShapeSquare(dx, dy);
+      clearShapeSquare(dx, dy, x, y);
       ctx.fillStyle = "rgb(255,0,0)";
       var shape = getShape(dx, dy);
       var pixelsOffset = getGridPixelsOffset(dx, dy);
