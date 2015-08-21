@@ -11,7 +11,7 @@ var websocket;
 
 // INIT MODULE
 function init() {
-    draw.initGrid(2);
+    draw.initGrid(5);
     initWebSocket();
 }
 function initWebSocket() {
@@ -44,7 +44,7 @@ function onMessage(evt) {
    for(i=0; i<obj.shapes.length; i+=1) {
      shape = obj.shapes[i];
      draw.saveShape(shape.tiles, shape.dx, shape.dy);
-     draw.drawShape(shape.dx, shape.dy, 0 - obj.screen.x, 0 - obj.screen.y)
+     draw.drawShape(shape.dx - 1, shape.dy - 1, 0 - obj.screen.x, 0 - obj.screen.y)
    }
 }
 function onError(evt) {

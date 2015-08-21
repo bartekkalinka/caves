@@ -42,11 +42,13 @@ define( ['scripts/globals'], function (glob) {
       return shape[j][i] === "1";
     }
     function drawShape(dx, dy, x, y) {
+      var readdx = dx + 1
+      var readdy = dy + 1
       clearShapeSquare(dx, dy, x, y);
       ctx.fillStyle = "rgb(255,0,0)";
-      var shape = getShape(dx, dy);
+      var shape = getShape(readdx, readdy);
       var pixelsOffset = getGridPixelsOffset(dx, dy);
-      var detailScale = Math.pow(2, getShapeDetail(dx, dy));
+      var detailScale = Math.pow(2, getShapeDetail(readdx, readdy));
       var shapeTiles = glob.initShapeTiles * detailScale;
       var tilePixels = glob.initTilePixels / detailScale;
       var i, j
