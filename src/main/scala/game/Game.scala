@@ -8,7 +8,7 @@ import scala.util.Random
 case class Player(x: Int, y: Int)
 case class Shape(dx: Int, dy: Int, tiles: Array[String])
 case class ScreenOffset(x: Int, y: Int)
-case class Broadcast(player: Player, screen: ScreenOffset, shapes: Array[Shape])
+case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixes: Int, shapes: Array[Shape])
 
 case object Tick
 case class Delay(counter: Int)
@@ -16,12 +16,14 @@ case class StateData(player: Player)
 case class UserInput(dir: Option[String])
 case class StepData(state: StateData, input: UserInput)
 
+sealed trait InputDrivenMod
+case class PlayerMove(xMod: Int, yMod: Int) extends InputDrivenMod
+case class Zoom(in: Boolean) extends InputDrivenMod
 sealed trait OtherMod
 case class NewOther(x: Int) extends OtherMod
 case class OtherMove(yMod: Int) extends OtherMod
-case class PlayerMove(xMod: Int, yMod: Int)
 case object DelayCount extends OtherMod
-case class StateMod(playerMove: PlayerMove)
+case class StateMod(inputDrivenMod: Option[InputDrivenMod])
 
 object Step {
   def props() = Props(classOf[Step])
@@ -30,14 +32,15 @@ class Step extends Actor with ActorLogging {
   def receive = {
     case StepData(state, input) => {
       log.debug("StepData received, input = " + input.dir.getOrElse("null"))
-      val playerMove = input.dir match {
-          case Some("right") => PlayerMove(Const.moveStep, 0)
-          case Some("up") => PlayerMove(0, -Const.moveStep)
-          case Some("left") => PlayerMove(-Const.moveStep, 0)
-          case Some("down") => PlayerMove(0, Const.moveStep)
-          case _ => PlayerMove(0, 0)
+      val inputDrivenMod = input.dir.map {
+          case "right" => PlayerMove(Const.moveStep, 0)
+          case "up" => PlayerMove(0, -Const.moveStep)
+          case "left" => PlayerMove(-Const.moveStep, 0)
+          case "down" => PlayerMove(0, Const.moveStep)
+          case "zoomin" => Zoom(true)
+          case "zoomout" => Zoom(false)
       }
-      context.actorSelection("../state") ! StateMod(playerMove)
+      context.actorSelection("../state") ! StateMod(inputDrivenMod)
     }
   }
 }
@@ -62,15 +65,16 @@ class Input extends Actor with ActorLogging {
 }
 
 object Const {
-  val initTilePixels = 64
   val initShapeTiles = 6
-  val shapePixels = initTilePixels * initShapeTiles
   val moveStep = 15
+  val zoomFactor = Math.sqrt(1.5)
 }
 
 object Screen {
-  def calculate(player: Player): (Array[Shape], ScreenOffset) = {
-    val sh = Const.shapePixels
+  def shapePixels(baseTilePixels: Int) = baseTilePixels * Const.initShapeTiles
+
+  def calculate(player: Player, baseTilePixels: Int): (Array[Shape], ScreenOffset) = {
+    val sh = shapePixels(baseTilePixels)
     val (shapeOffs, screenOffs) = player match { case Player(x, y) => ((x / sh, y / sh), ScreenOffset(x % sh, y % sh))}
     val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
     val terrainCoords = shapeOffs match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
@@ -85,18 +89,22 @@ object State {
 class State extends Actor with ActorLogging {
   var player = Player(15, 0)
   var score = 0
+  var baseTilePixels = 64
 
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
 
   def receive = {
-    case StateMod(playerMove) => {
+    case StateMod(inputDrivenMod) => {
       log.debug("StateMod received")
       //apply modifications
-      player = player.copy(x = player.x + playerMove.xMod, y = player.y + playerMove.yMod)
+      inputDrivenMod.foreach {
+        case PlayerMove(xMod, yMod) => player = player.copy(x = player.x + xMod, y = player.y + yMod)
+        case Zoom(in) => if(in) Math.floor(baseTilePixels * Const.zoomFactor) else Math.floor(baseTilePixels / Const.zoomFactor)
+      }
 
       //broadcast state to client
-      val (terrain, screenOffset) = Screen.calculate(player)
-      context.actorSelection("../websocket") ! Broadcast(player, screenOffset, terrain)
+      val (terrain, screenOffset) = Screen.calculate(player, baseTilePixels)
+      context.actorSelection("../websocket") ! Broadcast(player, screenOffset, baseTilePixels, terrain)
     }
 
     case Tick => {

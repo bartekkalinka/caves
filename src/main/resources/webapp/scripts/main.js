@@ -37,6 +37,7 @@ function onClose(evt) {
 }
 function onMessage(evt) {
    var obj = JSON.parse(evt.data)
+   glob.baseTilePixels = obj.baseTilePixels
    draw.clearCanvas();
    $("#debug").html(obj.shapes.length)
    var shape
@@ -68,6 +69,12 @@ function doKeyDown(e) {
       break;
   case 40:
       doSend("down");
+      break;
+  case '+':
+      doSend("zoomin");
+      break;
+  case '-':
+      doSend("zoomout");
       break;
   }
 }
