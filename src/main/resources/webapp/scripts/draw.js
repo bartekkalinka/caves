@@ -57,7 +57,9 @@ define( ['scripts/globals'], function (glob) {
           if(isShapeTileSet(shape, j, i)) {
             ctx.fillRect(
               x + pixelsOffset[0] + tilePixels * j,
-              y + pixelsOffset[1] + tilePixels * i, tilePixels, tilePixels
+              y + pixelsOffset[1] + tilePixels * i,
+              tilePixels + 1,
+              tilePixels + 1
             );
           }
         }

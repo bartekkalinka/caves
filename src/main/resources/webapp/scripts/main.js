@@ -39,7 +39,7 @@ function onMessage(evt) {
    var obj = JSON.parse(evt.data)
    glob.baseTilePixels = obj.baseTilePixels
    draw.clearCanvas();
-   $("#debug").html(obj.shapes.length)
+   $("#debug").html(obj.baseTilePixels)
    var shape
    var i
    for(i=0; i<obj.shapes.length; i+=1) {
