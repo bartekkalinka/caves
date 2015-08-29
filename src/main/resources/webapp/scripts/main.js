@@ -70,10 +70,10 @@ function doKeyDown(e) {
   case 40:
       doSend("down");
       break;
-  case '+':
+  case 107: //+
       doSend("zoomin");
       break;
-  case '-':
+  case 109: //-
       doSend("zoomout");
       break;
   }

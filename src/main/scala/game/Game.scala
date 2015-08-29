@@ -8,7 +8,7 @@ import scala.util.Random
 case class Player(x: Int, y: Int)
 case class Shape(dx: Int, dy: Int, tiles: Array[String])
 case class ScreenOffset(x: Int, y: Int)
-case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixes: Int, shapes: Array[Shape])
+case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, shapes: Array[Shape])
 
 case object Tick
 case class Delay(counter: Int)
@@ -32,7 +32,7 @@ class Step extends Actor with ActorLogging {
   def receive = {
     case StepData(state, input) => {
       log.debug("StepData received, input = " + input.dir.getOrElse("null"))
-      val inputDrivenMod = input.dir.map {
+      val inputDrivenModOpt = input.dir.map {
           case "right" => PlayerMove(Const.moveStep, 0)
           case "up" => PlayerMove(0, -Const.moveStep)
           case "left" => PlayerMove(-Const.moveStep, 0)
@@ -40,7 +40,7 @@ class Step extends Actor with ActorLogging {
           case "zoomin" => Zoom(true)
           case "zoomout" => Zoom(false)
       }
-      context.actorSelection("../state") ! StateMod(inputDrivenMod)
+      context.actorSelection("../state") ! StateMod(inputDrivenModOpt)
     }
   }
 }
@@ -94,12 +94,14 @@ class State extends Actor with ActorLogging {
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
 
   def receive = {
-    case StateMod(inputDrivenMod) => {
+    case StateMod(inputDrivenModOpt) => {
       log.debug("StateMod received")
       //apply modifications
-      inputDrivenMod.foreach {
+      inputDrivenModOpt.foreach {
         case PlayerMove(xMod, yMod) => player = player.copy(x = player.x + xMod, y = player.y + yMod)
-        case Zoom(in) => if(in) Math.floor(baseTilePixels * Const.zoomFactor) else Math.floor(baseTilePixels / Const.zoomFactor)
+        case Zoom(in) => baseTilePixels =
+          if(in) math.floor(baseTilePixels * Const.zoomFactor).toInt
+          else math.floor(baseTilePixels / Const.zoomFactor).toInt
       }
 
       //broadcast state to client
