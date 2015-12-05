@@ -37,7 +37,7 @@ object Main {
     val server = system.actorOf(WebSocketServer.props(), "websocket")
     system.actorOf(Step.props(), "step")
     system.actorOf(Input.props(), "input")
-    system.actorOf(State.props(), "state")
+    system.actorOf(StateHolder.props(), "state")
 
     val interface = "localhost"
     val port = 8080

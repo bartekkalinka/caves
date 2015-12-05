@@ -8,7 +8,6 @@ import scala.util.Random
 case class Player(x: Int, y: Int)
 case class Shape(dx: Int, dy: Int, tiles: Array[String])
 case class ScreenOffset(x: Int, y: Int)
-case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, shapes: Array[Shape])
 
 case object Tick
 case class Delay(counter: Int)
@@ -23,24 +22,27 @@ sealed trait OtherMod
 case class NewOther(x: Int) extends OtherMod
 case class OtherMove(yMod: Int) extends OtherMod
 case object DelayCount extends OtherMod
-case class StateMod(inputDrivenMod: Option[InputDrivenMod])
+case class StateMod(inputDrivenModOpt: Option[InputDrivenMod])
 
 object Step {
   def props() = Props(classOf[Step])
+  def step(data: StepData): StateMod = {
+    val inputDrivenModOpt = data.input.dir.map {
+      case "right" => PlayerMove(Const.moveStep, 0)
+      case "up" => PlayerMove(0, -Const.moveStep)
+      case "left" => PlayerMove(-Const.moveStep, 0)
+      case "down" => PlayerMove(0, Const.moveStep)
+      case "zoomin" => Zoom(true)
+      case "zoomout" => Zoom(false)
+    }
+    StateMod(inputDrivenModOpt)
+  } 
 }
 class Step extends Actor with ActorLogging {
   def receive = {
-    case StepData(state, input) => {
+    case data@StepData(state, input) => {
       log.debug("StepData received, input = " + input.dir.getOrElse("null"))
-      val inputDrivenModOpt = input.dir.map {
-          case "right" => PlayerMove(Const.moveStep, 0)
-          case "up" => PlayerMove(0, -Const.moveStep)
-          case "left" => PlayerMove(-Const.moveStep, 0)
-          case "down" => PlayerMove(0, Const.moveStep)
-          case "zoomin" => Zoom(true)
-          case "zoomout" => Zoom(false)
-      }
-      context.actorSelection("../state") ! StateMod(inputDrivenModOpt)
+      context.actorSelection("../state") ! Step.step(data) 
     }
   }
 }
@@ -83,35 +85,50 @@ object Screen {
   }
 }
 
-object State {
-  def props() = Props(classOf[State])
+case class State(player: Player, score: Int, baseTilePixels: Int)
+{
+  def applyMod(mod: StateMod): State = {
+    mod.inputDrivenModOpt.map {
+      case PlayerMove(xMod, yMod) => copy(player = player.copy(x = player.x + xMod, y = player.y + yMod))
+      case Zoom(in) => copy(baseTilePixels =
+        if(in) math.floor(baseTilePixels * Const.zoomFactor).toInt
+        else math.floor(baseTilePixels / Const.zoomFactor).toInt)
+    }.getOrElse(this)
+  }
 }
-class State extends Actor with ActorLogging {
-  var player = Player(15, 0)
-  var score = 0
-  var baseTilePixels = 64
+
+case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, shapes: Array[Shape])
+
+object Broadcast
+{
+  def fromState(state: State): Broadcast = {
+    val (terrain, screenOffset) = Screen.calculate(state.player, state.baseTilePixels)
+    Broadcast(state.player, screenOffset, state.baseTilePixels, terrain)
+  }
+}
+
+object StateHolder {
+  def props() = Props(classOf[StateHolder])
+}
+class StateHolder extends Actor with ActorLogging {
+  var state = State(Player(15, 0), 0, 64)
 
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
 
   def receive = {
-    case StateMod(inputDrivenModOpt) => {
+    case mod: StateMod => {
       log.debug("StateMod received")
       //apply modifications
-      inputDrivenModOpt.foreach {
-        case PlayerMove(xMod, yMod) => player = player.copy(x = player.x + xMod, y = player.y + yMod)
-        case Zoom(in) => baseTilePixels =
-          if(in) math.floor(baseTilePixels * Const.zoomFactor).toInt
-          else math.floor(baseTilePixels / Const.zoomFactor).toInt
-      }
+      state = state.applyMod(mod)
 
       //broadcast state to client
-      val (terrain, screenOffset) = Screen.calculate(player, baseTilePixels)
-      context.actorSelection("../websocket") ! Broadcast(player, screenOffset, baseTilePixels, terrain)
+
+      context.actorSelection("../websocket") ! Broadcast.fromState(state)
     }
 
     case Tick => {
       log.debug("Tick received")
-      context.actorSelection("../input") ! StateData(player)
+      context.actorSelection("../input") ! StateData(state.player)
     }
   }
 }
