@@ -12,8 +12,8 @@ case class ScreenOffset(x: Int, y: Int)
 case object Tick
 case class Delay(counter: Int)
 case class StateData(player: Player)
-case class UserInput(dir: Option[String])
-case class StepData(state: StateData, input: UserInput)
+case class UserInput(dir: String)
+case class StepData(state: StateData, input: Option[UserInput])
 
 sealed trait InputDrivenMod
 case class PlayerMove(xMod: Int, yMod: Int) extends InputDrivenMod
@@ -27,13 +27,13 @@ case class StateMod(inputDrivenModOpt: Option[InputDrivenMod])
 object Step {
   def props() = Props(classOf[Step])
   def step(data: StepData): StateMod = {
-    val inputDrivenModOpt = data.input.dir.map {
-      case "right" => PlayerMove(Const.moveStep, 0)
-      case "up" => PlayerMove(0, -Const.moveStep)
-      case "left" => PlayerMove(-Const.moveStep, 0)
-      case "down" => PlayerMove(0, Const.moveStep)
-      case "zoomin" => Zoom(true)
-      case "zoomout" => Zoom(false)
+    val inputDrivenModOpt = data.input.map  {
+      case UserInput("right") => PlayerMove(Const.moveStep, 0)
+      case UserInput("up") => PlayerMove(0, -Const.moveStep)
+      case UserInput("left") => PlayerMove(-Const.moveStep, 0)
+      case UserInput("down") => PlayerMove(0, Const.moveStep)
+      case UserInput("zoomin") => Zoom(true)
+      case UserInput("zoomout") => Zoom(false)
     }
     StateMod(inputDrivenModOpt)
   } 
@@ -41,7 +41,7 @@ object Step {
 class Step extends Actor with ActorLogging {
   def receive = {
     case data@StepData(state, input) => {
-      log.debug("StepData received, input = " + input.dir.getOrElse("null"))
+      log.debug("StepData received, input = " + input.map(_.dir).getOrElse("null"))
       context.actorSelection("../state") ! Step.step(data) 
     }
   }
@@ -56,11 +56,11 @@ class Input extends Actor with ActorLogging {
   def receive = {
     case UserInput(ui) => {
       //log.debug("UserInput " + ui.get + " received")
-      userInput = ui
+      userInput = Some(ui)
     }
     case sd: StateData => {
       log.debug("StateData received")
-      context.actorSelection("../step") ! StepData(sd, UserInput(userInput))
+      context.actorSelection("../step") ! StepData(sd, userInput.map(UserInput))
       userInput = None
     }
   }
@@ -95,6 +95,12 @@ case class State(player: Player, score: Int, baseTilePixels: Int)
         else math.floor(baseTilePixels / Const.zoomFactor).toInt)
     }.getOrElse(this)
   }
+
+
+}
+
+object State {
+  def init: State = State(Player(15, 0), 0, 64)
 }
 
 case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, shapes: Array[Shape])
@@ -111,7 +117,7 @@ object StateHolder {
   def props() = Props(classOf[StateHolder])
 }
 class StateHolder extends Actor with ActorLogging {
-  var state = State(Player(15, 0), 0, 64)
+  var state = State.init
 
   override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
 
