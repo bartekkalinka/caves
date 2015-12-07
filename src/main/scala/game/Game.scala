@@ -1,10 +1,5 @@
 package game
 
-import akka.actor._
-import scala.concurrent.duration._
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Random
-
 case class Player(x: Int, y: Int)
 case class Shape(dx: Int, dy: Int, tiles: Array[String])
 case class ScreenOffset(x: Int, y: Int)
@@ -25,7 +20,6 @@ case object DelayCount extends OtherMod
 case class StateMod(inputDrivenModOpt: Option[InputDrivenMod])
 
 object Step {
-  def props() = Props(classOf[Step])
   def step(data: StepData): StateMod = {
     val inputDrivenModOpt = data.input.map  {
       case UserInput("right") => PlayerMove(Const.moveStep, 0)
@@ -37,33 +31,6 @@ object Step {
     }
     StateMod(inputDrivenModOpt)
   } 
-}
-class Step extends Actor with ActorLogging {
-  def receive = {
-    case data@StepData(state, input) => {
-      log.debug("StepData received, input = " + input.map(_.dir).getOrElse("null"))
-      context.actorSelection("../state") ! Step.step(data) 
-    }
-  }
-}
-
-object Input {
-  def props() = Props(classOf[Input])
-}
-class Input extends Actor with ActorLogging {
-  var userInput: Option[String] = None
-
-  def receive = {
-    case UserInput(ui) => {
-      //log.debug("UserInput " + ui.get + " received")
-      userInput = Some(ui)
-    }
-    case sd: StateData => {
-      log.debug("StateData received")
-      context.actorSelection("../step") ! StepData(sd, userInput.map(UserInput))
-      userInput = None
-    }
-  }
 }
 
 object Const {
@@ -95,8 +62,6 @@ case class State(player: Player, score: Int, baseTilePixels: Int)
         else math.floor(baseTilePixels / Const.zoomFactor).toInt)
     }.getOrElse(this)
   }
-
-
 }
 
 object State {
@@ -110,31 +75,5 @@ object Broadcast
   def fromState(state: State): Broadcast = {
     val (terrain, screenOffset) = Screen.calculate(state.player, state.baseTilePixels)
     Broadcast(state.player, screenOffset, state.baseTilePixels, terrain)
-  }
-}
-
-object StateHolder {
-  def props() = Props(classOf[StateHolder])
-}
-class StateHolder extends Actor with ActorLogging {
-  var state = State.init
-
-  override def preStart(): Unit = { context.system.scheduler.schedule(1 seconds, 50 millis, self, Tick) }
-
-  def receive = {
-    case mod: StateMod => {
-      log.debug("StateMod received")
-      //apply modifications
-      state = state.applyMod(mod)
-
-      //broadcast state to client
-
-      context.actorSelection("../websocket") ! Broadcast.fromState(state)
-    }
-
-    case Tick => {
-      log.debug("Tick received")
-      context.actorSelection("../input") ! StateData(state.player)
-    }
   }
 }
