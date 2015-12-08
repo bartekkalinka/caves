@@ -3,7 +3,7 @@ package websockets
 import akka.actor.Cancellable
 import akka.stream.scaladsl._
 import akka.stream.stage.{DetachedContext, DetachedStage, DownstreamDirective, UpstreamDirective}
-import akka.stream.{Attributes, FanInShape2}
+import akka.stream.{FlowShape, Attributes, FanInShape2}
 import game._
 import scala.concurrent.duration._
 
@@ -23,7 +23,7 @@ class LastElemOption[T]() extends DetachedStage[T, Option[T]] {
 }
 
 object GameFlow {
-  def mainTick: Source[Unit, Cancellable] = Source(1 seconds, 50 millis, ())
+  def mainTick: Source[Unit, Cancellable] = Source.tick(1 seconds, 50 millis, ())
 
   private def zipWithNode[A](implicit builder: FlowGraph.Builder[Unit]): FanInShape2[Unit, A, A] =  {
     val zipWith = ZipWith[Unit, A, A]((a: Unit, i: A) => i)
@@ -35,7 +35,7 @@ object GameFlow {
     state.applyMod(Step.step(StepData(StateData(state.player), input)))
 
   def flow(sender: String): Flow[UserInput, game.Broadcast, Unit] =
-    Flow() { implicit builder: FlowGraph.Builder[Unit] =>
+    Flow.fromGraph(FlowGraph.create() { implicit builder: FlowGraph.Builder[Unit] =>
       import FlowGraph.Implicits._
       val front = Flow[game.UserInput].map(identity)
       val frontNode = builder.add(front)
@@ -48,6 +48,6 @@ object GameFlow {
       mainTick ~> zipNode.in0
       sync.outlet ~> zipNode.in1
       zipNode.out ~> stateNode.inlet
-      (frontNode.inlet, broadcast.outlet)
-  }
+      FlowShape(frontNode.inlet, broadcast.outlet)
+  })
 }

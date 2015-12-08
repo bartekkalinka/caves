@@ -11,10 +11,8 @@ scalacOptions += "-deprecation"
 Revolver.settings
 
 libraryDependencies ++= {
-  val akkaV = "2.3.12"
   Seq(
-    "com.typesafe.akka" %% "akka-actor" % akkaV,
-    "com.typesafe.akka" %% "akka-http-experimental" % "1.0",
+    "com.typesafe.akka" %% "akka-http-experimental" % "2.0-M2",
     "com.lihaoyi" %% "upickle" % "0.2.8"
   )
 }
