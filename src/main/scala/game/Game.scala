@@ -1,7 +1,7 @@
 package game
 
 case class Player(x: Int, y: Int)
-case class Shape(dx: Int, dy: Int, tiles: Array[String])
+case class Shape(tiles: Array[String])
 case class ScreenOffset(x: Int, y: Int)
 
 case object Tick
@@ -42,13 +42,26 @@ object Const {
 object Screen {
   def pixelsPerShape(pixelsPerTile: Int) = pixelsPerTile * Const.tilesPerShape
 
+  def cutDisplayed(terrain: Map[(Int, Int), Shape], screenOffs: ScreenOffset, pixelsPerTile: Int): Shape = {
+    val ScreenOffset(offx, offy) = screenOffs
+    val (tileOffsX, tileOffsY) = (offx / pixelsPerTile, offy / pixelsPerTile)
+    val piece00: Array[String] = terrain.get((0, 0)).get.tiles
+    val piece01: Array[String] = terrain.get((0, 1)).get.tiles
+    val piece10: Array[String] = terrain.get((1, 0)).get.tiles
+    val piece11: Array[String] = terrain.get((1, 1)).get.tiles
+    Shape(
+      piece00.drop(tileOffsY).map(_.substring(tileOffsX)).zip(piece10.drop(tileOffsX).map(_.substring(0, tileOffsX))).map(r => r._1 + r._2) ++
+      piece01.take(tileOffsY).map(_.substring(tileOffsX)).zip(piece11.take(tileOffsX).map(_.substring(0, tileOffsX))).map(r => r._1 + r._2)
+    )
+  }
+
   def calculate(player: Player, pixelsPerTile: Int): (Shape, ScreenOffset) = {
     val pix = pixelsPerShape(pixelsPerTile)
     val (shapeCoord, screenOffs) = player match { case Player(x, y) => ((x / pix, y / pix), ScreenOffset(x % pix, y % pix))}
     val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
     val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
-    val terrain = terrainCoords.map { case (dx, dy) => Shape(dx - shapeCoord._1, dy - shapeCoord._2, ShapeGenWrapper.get(dx, dy)) }
-    (terrain.head, screenOffs)
+    val terrain: Map[(Int, Int), Shape] = terrainCoords.map { case (dx, dy) => ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
+    (cutDisplayed(terrain, screenOffs, pixelsPerTile), ScreenOffset(0, 0))
   }
 }
 
