@@ -40,13 +40,7 @@ function onMessage(evt) {
    glob.baseTilePixels = obj.baseTilePixels
    draw.clearCanvas();
    $("#debug").html(obj.baseTilePixels)
-   var shape
-   var i
-   for(i=0; i<obj.shapes.length; i+=1) {
-     shape = obj.shapes[i];
-     draw.saveShape(shape.tiles, shape.dx, shape.dy);
-     draw.drawShape(shape.dx - 1, shape.dy - 1, 0 - obj.screen.x, 0 - obj.screen.y)
-   }
+   draw.drawShape(obj.shape.tiles, 0 - obj.screen.x, 0 - obj.screen.y)
 }
 function onError(evt) {
 }

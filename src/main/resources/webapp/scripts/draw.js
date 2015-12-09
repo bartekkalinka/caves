@@ -19,36 +19,20 @@ define( ['scripts/globals'], function (glob) {
             glob.grid[i] = new Array();
         }
     }
-    function saveShape(shape, dx, dy) {
-        var obj = shape;
-        obj.detail = glob.targetDetail;
-        glob.grid[dx][dy] = obj;
-    }
-    function getShape(dx, dy) {
-        return glob.grid[dx][dy];
-    }
-    function getShapeDetail(dx, dy) {
-        return glob.grid[dx][dy].detail;
-    }
     function getGridPixelsOffset(dx, dy) {
         return [dx * shapePixels(), dy * shapePixels()];
     }
-    function clearShapeSquare(dx, dy, x, y) {
-      var pixelsOffset = getGridPixelsOffset(dx, dy);
+    function clearShapeSquare(x, y) {
       ctx.fillStyle = "rgb(0,0,0)";
-      ctx.fillRect(x + pixelsOffset[0], y + pixelsOffset[1], shapePixels(), shapePixels());
+      ctx.fillRect(x, y, shapePixels(), shapePixels());
     }
     function isShapeTileSet(shape, j, i) {
       return shape[j][i] === "1";
     }
-    function drawShape(dx, dy, x, y) {
-      var readdx = dx + 1
-      var readdy = dy + 1
-      clearShapeSquare(dx, dy, x, y);
+    function drawShape(shape, x, y) {
+      clearShapeSquare(x, y);
       ctx.fillStyle = "rgb(255,0,0)";
-      var shape = getShape(readdx, readdy);
-      var pixelsOffset = getGridPixelsOffset(dx, dy);
-      var detailScale = Math.pow(2, getShapeDetail(readdx, readdy));
+      var detailScale = Math.pow(2, glob.targetDetail);
       var shapeTiles = glob.initShapeTiles * detailScale;
       var tilePixels = glob.baseTilePixels / detailScale;
       var i, j
@@ -56,8 +40,8 @@ define( ['scripts/globals'], function (glob) {
         for(j=0; j<shapeTiles; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
             ctx.fillRect(
-              x + pixelsOffset[0] + tilePixels * j,
-              y + pixelsOffset[1] + tilePixels * i,
+              x + tilePixels * j,
+              y + tilePixels * i,
               tilePixels + 1,
               tilePixels + 1
             );
@@ -68,7 +52,6 @@ define( ['scripts/globals'], function (glob) {
 
     return {
         "initGrid" : initGrid,
-        "saveShape" : saveShape,
         "clearCanvas" : clearCanvas,
         "drawShape" : drawShape
     };
