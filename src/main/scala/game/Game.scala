@@ -34,45 +34,53 @@ object Step {
 }
 
 object Const {
-  val tilesPerShape = 6
+  val baseTilesPerShape = 6
+  val targetNoiseDetail = 3
   val moveStep = 15
   val zoomFactor = Math.sqrt(1.5)
 }
 
 object Screen {
-  def pixelsPerShape(pixelsPerTile: Int) = pixelsPerTile * Const.tilesPerShape
+  def pixelsPerShape(basePixelsPerTile: Int) = basePixelsPerTile * Const.baseTilesPerShape
 
-  def cutDisplayed(terrain: Map[(Int, Int), Shape], screenOffs: ScreenOffset, pixelsPerTile: Int): Shape = {
+  def cutDisplayed(terrain: Map[(Int, Int), Shape], screenOffs: ScreenOffset, baseTilePixels: Int): Shape = {
+    val pixelsPerTile = (baseTilePixels / Math.pow(2, Const.targetNoiseDetail)).toInt
+    println("pixelsPerTile " + pixelsPerTile)
     val ScreenOffset(offx, offy) = screenOffs
+    println("offx " + offx)
+    println("offy " + offy)
     val (tileOffsX, tileOffsY) = (offx / pixelsPerTile, offy / pixelsPerTile)
     val piece00: Array[String] = terrain.get((0, 0)).get.tiles
     val piece01: Array[String] = terrain.get((0, 1)).get.tiles
     val piece10: Array[String] = terrain.get((1, 0)).get.tiles
     val piece11: Array[String] = terrain.get((1, 1)).get.tiles
+    println("piece00.tiles.length " + piece00.length)
+    println("piece00(0) " + piece00(0))
     Shape(
-      piece00.drop(tileOffsY).map(_.substring(tileOffsX)).zip(piece10.drop(tileOffsX).map(_.substring(0, tileOffsX))).map(r => r._1 + r._2) ++
-      piece01.take(tileOffsY).map(_.substring(tileOffsX)).zip(piece11.take(tileOffsX).map(_.substring(0, tileOffsX))).map(r => r._1 + r._2)
+      piece00.drop(tileOffsX).map(_.substring(tileOffsY)).zip(piece10.drop(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2) ++
+      piece01.take(tileOffsX).map(_.substring(tileOffsY)).zip(piece11.take(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2)
     )
   }
 
-  def calculate(player: Player, pixelsPerTile: Int): (Shape, ScreenOffset) = {
-    val pix = pixelsPerShape(pixelsPerTile)
+  def calculate(player: Player, baseTilePixels: Int): (Shape, ScreenOffset) = {
+    val pix = pixelsPerShape(baseTilePixels)
     val (shapeCoord, screenOffs) = player match { case Player(x, y) => ((x / pix, y / pix), ScreenOffset(x % pix, y % pix))}
     val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
     val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
-    val terrain: Map[(Int, Int), Shape] = terrainCoords.map { case (dx, dy) => ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
-    (cutDisplayed(terrain, screenOffs, pixelsPerTile), ScreenOffset(0, 0))
+    val terrain: Map[(Int, Int), Shape] = terrainCoords.map { case (dx, dy) =>
+      ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
+    (cutDisplayed(terrain, screenOffs, baseTilePixels), ScreenOffset(0, 0))
   }
 }
 
-case class State(player: Player, score: Int, pixelsPerTile: Int)
+case class State(player: Player, score: Int, baseTilePixels: Int)
 {
   def applyMod(mod: StateMod): State = {
     mod.inputDrivenModOpt.map {
       case PlayerMove(xMod, yMod) => copy(player = player.copy(x = player.x + xMod, y = player.y + yMod))
-      case Zoom(in) => copy(pixelsPerTile =
-        if(in) math.floor(pixelsPerTile * Const.zoomFactor).toInt
-        else math.floor(pixelsPerTile / Const.zoomFactor).toInt)
+      case Zoom(in) => copy(baseTilePixels =
+        if(in) math.floor(baseTilePixels * Const.zoomFactor).toInt
+        else math.floor(baseTilePixels / Const.zoomFactor).toInt)
     }.getOrElse(this)
   }
 }
@@ -86,7 +94,7 @@ case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, 
 object Broadcast
 {
   def fromState(state: State): Broadcast = {
-    val (shape, screenOffset) = Screen.calculate(state.player, state.pixelsPerTile)
-    Broadcast(state.player, screenOffset, state.pixelsPerTile, shape)
+    val (shape, screenOffset) = Screen.calculate(state.player, state.baseTilePixels)
+    Broadcast(state.player, screenOffset, state.baseTilePixels, shape)
   }
 }
