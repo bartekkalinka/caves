@@ -45,26 +45,24 @@ object Screen {
 
   def cutDisplayed(terrain: Map[(Int, Int), Shape], screenOffs: ScreenOffset, baseTilePixels: Int): Shape = {
     val pixelsPerTile = (baseTilePixels / Math.pow(2, Const.targetNoiseDetail)).toInt
-    println("pixelsPerTile " + pixelsPerTile)
     val ScreenOffset(offx, offy) = screenOffs
-    println("offx " + offx)
-    println("offy " + offy)
     val (tileOffsX, tileOffsY) = (offx / pixelsPerTile, offy / pixelsPerTile)
     val piece00: Array[String] = terrain.get((0, 0)).get.tiles
     val piece01: Array[String] = terrain.get((0, 1)).get.tiles
     val piece10: Array[String] = terrain.get((1, 0)).get.tiles
     val piece11: Array[String] = terrain.get((1, 1)).get.tiles
-    println("piece00.tiles.length " + piece00.length)
-    println("piece00(0) " + piece00(0))
     Shape(
-      piece00.drop(tileOffsX).map(_.substring(tileOffsY)).zip(piece10.drop(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2) ++
-      piece01.take(tileOffsX).map(_.substring(tileOffsY)).zip(piece11.take(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2)
+      piece00.drop(tileOffsX).map(_.substring(tileOffsY)).zip(piece01.drop(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2) ++
+      piece10.take(tileOffsX).map(_.substring(tileOffsY)).zip(piece11.take(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2)
     )
   }
 
+  def absModulo(a: Int, b: Int) = if(a < 0) b + a % b else a % b
+
   def calculate(player: Player, baseTilePixels: Int): (Shape, ScreenOffset) = {
     val pix = pixelsPerShape(baseTilePixels)
-    val (shapeCoord, screenOffs) = player match { case Player(x, y) => ((x / pix, y / pix), ScreenOffset(x % pix, y % pix))}
+    val shapeCoord = (player.x / pix, player.y / pix)
+    val screenOffs = ScreenOffset(absModulo(player.x, pix), absModulo(player.y, pix))
     val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
     val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
     val terrain: Map[(Int, Int), Shape] = terrainCoords.map { case (dx, dy) =>
