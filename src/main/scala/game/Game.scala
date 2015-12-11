@@ -59,9 +59,11 @@ object Screen {
 
   def absModulo(a: Int, b: Int) = if(a < 0) b + a % b else a % b
 
+  def fluentDiv(a: Int, b: Int) = if(a < 0) a / b - 1 else a / b
+
   def calculate(player: Player, baseTilePixels: Int): (Shape, ScreenOffset) = {
     val pix = pixelsPerShape(baseTilePixels)
-    val shapeCoord = (player.x / pix, player.y / pix)
+    val shapeCoord = (fluentDiv(player.x, pix), fluentDiv(player.y, pix))
     val screenOffs = ScreenOffset(absModulo(player.x, pix), absModulo(player.y, pix))
     val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
     val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
