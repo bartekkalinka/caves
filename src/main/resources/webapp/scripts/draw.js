@@ -22,15 +22,15 @@ define( ['scripts/globals'], function (glob) {
     function getGridPixelsOffset(dx, dy) {
         return [dx * shapePixels(), dy * shapePixels()];
     }
-    function clearShapeSquare(x, y) {
+    function clearShapeSquare() {
       ctx.fillStyle = "rgb(0,0,0)";
-      ctx.fillRect(x, y, shapePixels(), shapePixels());
+      ctx.fillRect(0, 0, shapePixels(), shapePixels());
     }
     function isShapeTileSet(shape, j, i) {
       return shape[j][i] === "1";
     }
-    function drawShape(shape, x, y) {
-      clearShapeSquare(x, y);
+    function drawShape(shape) {
+      clearShapeSquare();
       ctx.fillStyle = "rgb(255,0,0)";
       var detailScale = Math.pow(2, glob.targetDetail);
       var shapeTiles = glob.initShapeTiles * detailScale;
@@ -40,8 +40,8 @@ define( ['scripts/globals'], function (glob) {
         for(j=0; j<shapeTiles; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
             ctx.fillRect(
-              x + tilePixels * j,
-              y + tilePixels * i,
+              tilePixels * j,
+              tilePixels * i,
               tilePixels + 1,
               tilePixels + 1
             );

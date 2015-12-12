@@ -61,7 +61,7 @@ object Screen {
 
   def fluentDiv(a: Int, b: Int) = if(a < 0) a / b - 1 else a / b
 
-  def calculate(player: Player, baseTilePixels: Int): (Shape, ScreenOffset) = {
+  def calculate(player: Player, baseTilePixels: Int): Shape = {
     val pix = pixelsPerShape(baseTilePixels)
     val shapeCoord = (fluentDiv(player.x, pix), fluentDiv(player.y, pix))
     val screenOffs = ScreenOffset(absModulo(player.x, pix), absModulo(player.y, pix))
@@ -69,7 +69,7 @@ object Screen {
     val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
     val terrain: Map[(Int, Int), Shape] = terrainCoords.map { case (dx, dy) =>
       ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
-    (cutDisplayed(terrain, screenOffs, baseTilePixels), ScreenOffset(0, 0))
+    cutDisplayed(terrain, screenOffs, baseTilePixels)
   }
 }
 
@@ -92,12 +92,12 @@ object State {
     state.applyMod(Step.step(StepData(StateData(state.player), input)))
 }
 
-case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, shape: Shape)
+case class Broadcast(player: Player, baseTilePixels: Int, shape: Shape)
 
 object Broadcast
 {
   def fromState(state: State): Broadcast = {
-    val (shape, screenOffset) = Screen.calculate(state.player, state.baseTilePixels)
-    Broadcast(state.player, screenOffset, state.baseTilePixels, shape)
+    val shape = Screen.calculate(state.player, state.baseTilePixels)
+    Broadcast(state.player, state.baseTilePixels, shape)
   }
 }
