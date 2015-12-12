@@ -87,6 +87,9 @@ case class State(player: Player, score: Int, baseTilePixels: Int)
 
 object State {
   def init: State = State(Player(15, 0), 0, 64)
+
+  def iteration(state: State, input: Option[UserInput]): State =
+    state.applyMod(Step.step(StepData(StateData(state.player), input)))
 }
 
 case class Broadcast(player: Player, screen: ScreenOffset, baseTilePixels: Int, shape: Shape)

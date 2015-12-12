@@ -8,8 +8,6 @@ resolvers += "Spray" at "http://repo.spray.io"
 
 scalacOptions += "-deprecation"
 
-Revolver.settings
-
 libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-http-experimental" % "2.0-M2",

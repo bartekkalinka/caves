@@ -31,9 +31,6 @@ object GameFlow {
     builder.add(zipWithSmallBuffer)
   }
 
-  private def oneIteration(state: State, input: Option[UserInput]) =
-    state.applyMod(Step.step(StepData(StateData(state.player), input)))
-
   def flow(sender: String): Flow[UserInput, game.Broadcast, Unit] =
     Flow.fromGraph(FlowGraph.create() { implicit builder: FlowGraph.Builder[Unit] =>
       import FlowGraph.Implicits._
@@ -41,7 +38,7 @@ object GameFlow {
       val frontNode = builder.add(front)
       val sync = frontNode.outlet.transform(() => new LastElemOption[UserInput]())
       val zipNode = zipWithNode[Option[UserInput]]
-      val state = Flow[Option[UserInput]].scan(game.State.init)(oneIteration)
+      val state = Flow[Option[UserInput]].scan(game.State.init)(game.State.iteration)
       val stateNode = builder.add(state)
       val broadcast = stateNode.outlet.map(game.Broadcast.fromState)
 
