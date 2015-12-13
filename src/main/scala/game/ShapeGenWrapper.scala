@@ -12,6 +12,10 @@ object ShapeGenWrapper {
     if(current.level >= neededLevel) current else getNoise(x, y, true)
   }
 
-  def get(x: Int, y: Int): Array[String] = getNoise(x, y).noise.map { arr => arr.foldLeft("")((s, n) => s +(if(n >= 500) "1" else "0")) }
+  private def noiseToBoolArr(noise: Array[Array[Int]]): Array[Array[Boolean]] = noise.map(_.map(_ >= 500))
+
+  private def boolArrToStrArr(boolArr: Array[Array[Boolean]]): Array[String] = boolArr.map(_.map(if(_) "1" else "0").reduce(_ + _))
+
+  def get(x: Int, y: Int): Array[String] = boolArrToStrArr(noiseToBoolArr(getNoise(x, y).noise))
 }
 
