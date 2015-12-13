@@ -1,7 +1,8 @@
 package game
 
 case class Player(x: Int, y: Int)
-case class Shape(tiles: Array[String])
+case class Shape(tiles: Array[Array[Boolean]])
+case class PackedShape(tiles: Array[String])
 case class ScreenOffset(x: Int, y: Int)
 
 case object Tick
@@ -47,13 +48,13 @@ object Screen {
     val pixelsPerTile = (baseTilePixels / Math.pow(2, Const.targetNoiseDetail)).toInt
     val ScreenOffset(offx, offy) = screenOffs
     val (tileOffsX, tileOffsY) = (offx / pixelsPerTile, offy / pixelsPerTile)
-    val piece00: Array[String] = terrain.get((0, 0)).get.tiles
-    val piece01: Array[String] = terrain.get((0, 1)).get.tiles
-    val piece10: Array[String] = terrain.get((1, 0)).get.tiles
-    val piece11: Array[String] = terrain.get((1, 1)).get.tiles
+    val piece00: Array[Array[Boolean]] = terrain.get((0, 0)).get.tiles
+    val piece01: Array[Array[Boolean]] = terrain.get((0, 1)).get.tiles
+    val piece10: Array[Array[Boolean]] = terrain.get((1, 0)).get.tiles
+    val piece11: Array[Array[Boolean]] = terrain.get((1, 1)).get.tiles
     Shape(
-      piece00.drop(tileOffsX).map(_.substring(tileOffsY)).zip(piece01.drop(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2) ++
-      piece10.take(tileOffsX).map(_.substring(tileOffsY)).zip(piece11.take(tileOffsX).map(_.substring(0, tileOffsY))).map(r => r._1 + r._2)
+      piece00.drop(tileOffsX).map(_.drop(tileOffsY)).zip(piece01.drop(tileOffsX).map(_.take(tileOffsY))).map(r => r._1 ++ r._2) ++
+      piece10.take(tileOffsX).map(_.drop(tileOffsY)).zip(piece11.take(tileOffsX).map(_.take(tileOffsY))).map(r => r._1 ++ r._2)
     )
   }
 
@@ -92,12 +93,14 @@ object State {
     state.applyMod(Step.step(StepData(StateData(state.player), input)))
 }
 
-case class Broadcast(player: Player, baseTilePixels: Int, shape: Shape)
+case class Broadcast(player: Player, baseTilePixels: Int, shape: PackedShape)
 
 object Broadcast
 {
+  private def packShape(shape: Shape): PackedShape = PackedShape(shape.tiles.map(_.map(if(_) "1" else "0").reduce(_ + _)))
+
   def fromState(state: State): Broadcast = {
     val shape = Screen.calculate(state.player, state.baseTilePixels)
-    Broadcast(state.player, state.baseTilePixels, shape)
+    Broadcast(state.player, state.baseTilePixels, packShape(shape))
   }
 }

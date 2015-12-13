@@ -14,8 +14,6 @@ object ShapeGenWrapper {
 
   private def noiseToBoolArr(noise: Array[Array[Int]]): Array[Array[Boolean]] = noise.map(_.map(_ >= 500))
 
-  private def boolArrToStrArr(boolArr: Array[Array[Boolean]]): Array[String] = boolArr.map(_.map(if(_) "1" else "0").reduce(_ + _))
-
-  def get(x: Int, y: Int): Array[String] = boolArrToStrArr(noiseToBoolArr(getNoise(x, y).noise))
+  def get(x: Int, y: Int): Array[Array[Boolean]] = noiseToBoolArr(getNoise(x, y).noise)
 }
 
