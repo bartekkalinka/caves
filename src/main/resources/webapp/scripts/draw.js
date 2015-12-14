@@ -10,7 +10,7 @@ define( ['scripts/globals'], function (glob) {
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     function shapePixels() {
-      return glob.initShapeTiles * glob.baseTilePixels
+      return glob.shapeTiles * glob.tilePixels
     }
     function initGrid(gridShapes) {
         var i
@@ -32,9 +32,8 @@ define( ['scripts/globals'], function (glob) {
     function drawShape(shape) {
       clearShapeSquare();
       ctx.fillStyle = "rgb(255,0,0)";
-      var detailScale = Math.pow(2, glob.targetDetail);
-      var shapeTiles = glob.initShapeTiles * detailScale;
-      var tilePixels = glob.baseTilePixels / detailScale;
+      var shapeTiles = glob.shapeTiles;
+      var tilePixels = glob.tilePixels;
       var i, j
       for(i=0; i<shapeTiles; i+=1) {
         for(j=0; j<shapeTiles; j+=1) {

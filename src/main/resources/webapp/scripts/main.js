@@ -37,9 +37,9 @@ function onClose(evt) {
 }
 function onMessage(evt) {
    var obj = JSON.parse(evt.data)
-   glob.baseTilePixels = obj.baseTilePixels
+   glob.tilePixels = obj.tilePixels
    draw.clearCanvas();
-   $("#debug").html(obj.baseTilePixels)
+   $("#debug").html(obj.tilePixels)
    draw.drawShape(obj.shape.tiles)
 }
 function onError(evt) {
