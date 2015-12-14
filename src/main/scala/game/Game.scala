@@ -3,7 +3,6 @@ package game
 case class Player(x: Int, y: Int)
 case class Shape(tiles: Array[Array[Boolean]])
 case class PackedShape(tiles: Array[String])
-case class ScreenOffset(x: Int, y: Int)
 
 case object Tick
 case class Delay(counter: Int)
