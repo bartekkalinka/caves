@@ -11,7 +11,8 @@ scalacOptions += "-deprecation"
 libraryDependencies ++= {
   Seq(
     "com.typesafe.akka" %% "akka-http-experimental" % "2.0-M2",
-    "com.lihaoyi" %% "upickle" % "0.2.8"
+    "com.lihaoyi" %% "upickle" % "0.2.8",
+    "org.scalatest" %% "scalatest" % "2.2.5" % "test"
   )
 }
 
