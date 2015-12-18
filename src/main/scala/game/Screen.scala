@@ -25,19 +25,23 @@ object Screen {
         ))
     }.toMap
 
-  def joinShapes(cutShapes: Map[(Int, Int), Shape]): Shape = {
-    val piece00: Array[Array[Boolean]] = cutShapes.get((0, 0)).get.tiles
-    val piece01: Array[Array[Boolean]] = cutShapes.get((0, 1)).get.tiles
-    val piece10: Array[Array[Boolean]] = cutShapes.get((1, 0)).get.tiles
-    val piece11: Array[Array[Boolean]] = cutShapes.get((1, 1)).get.tiles
+  def mapToTab(cutShapes: Map[(Int, Int), Shape]): Seq[Seq[Array[Array[Boolean]]]] =
+    List(
+      List(cutShapes.get((0, 0)).get.tiles, cutShapes.get((0, 1)).get.tiles),
+      List(cutShapes.get((1, 0)).get.tiles, cutShapes.get((1, 1)).get.tiles)
+    )
+
+  def joinRow(row: Seq[Array[Boolean]]): Array[Boolean] = row.reduce(_ ++ _)
+
+  def joinShapes(tabOfShapes: Seq[Seq[Array[Array[Boolean]]]]): Shape = {
     Shape(
-      piece00.zip(piece01).map(r => r._1 ++ r._2) ++
-        piece10.zip(piece11).map(r => r._1 ++ r._2)
+      tabOfShapes.head.head.zip(tabOfShapes.head(1)).map(r => r._1 ++ r._2) ++
+        tabOfShapes(1).head.zip(tabOfShapes(1)(1)).map(r => r._1 ++ r._2)
     )
   }
 
   def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape =
-    joinShapes(cutFromCoords(terrain, shapesCoordsWithCutOffsets(tileOffset)))
+    joinShapes(mapToTab(cutFromCoords(terrain, shapesCoordsWithCutOffsets(tileOffset))))
 
   def absModulo(a: Int, b: Int) = if(a < 0) b + a % b else a % b
 
