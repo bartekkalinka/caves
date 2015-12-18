@@ -41,12 +41,10 @@ object Screen {
     rehashAcc(Array[Seq[A]](), oneWay)
   }
 
-  def joinShapes(tabOfShapes: Seq[Seq[Array[Array[Boolean]]]]): Shape = {
+  def joinShapes(tabOfShapes: Seq[Seq[Array[Array[Boolean]]]]): Shape =
     Shape(
-      tabOfShapes.head.head.zip(tabOfShapes.head(1)).map(r => r._1 ++ r._2) ++
-        tabOfShapes(1).head.zip(tabOfShapes(1)(1)).map(r => r._1 ++ r._2)
+      tabOfShapes.map(rehash(_).map(joinRow)).reduce(_ ++ _)
     )
-  }
 
   def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape =
     joinShapes(mapToTab(cutFromCoords(terrain, shapesCoordsWithCutOffsets(tileOffset))))
