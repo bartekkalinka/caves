@@ -26,9 +26,10 @@ object Screen {
     }.toMap
 
   def mapToTab(cutShapes: Map[(Int, Int), Shape]): Seq[Seq[Array[Array[Boolean]]]] =
-    List(
-      List(cutShapes.get((0, 0)).get.tiles, cutShapes.get((0, 1)).get.tiles),
-      List(cutShapes.get((1, 0)).get.tiles, cutShapes.get((1, 1)).get.tiles)
+    cutShapes.keys.map(_._1).toSeq.distinct.map(x =>
+      cutShapes.keys.map(_._2).toSeq.distinct.map(y =>
+        cutShapes.get((x, y)).get.tiles
+      )
     )
 
   def joinRow(row: Seq[Array[Boolean]]): Array[Boolean] = row.reduce(_ ++ _)
