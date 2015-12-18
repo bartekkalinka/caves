@@ -16,5 +16,20 @@ class ScreenSpec extends FlatSpec with Matchers {
       Seq(Seq(true, false), Seq(true, true))
     )
   }
+
+  it should "rehash correctly" in {
+    val tab: Seq[Array[Int]] = List(
+      Array(1, 2, 3),
+      Array(4, 5, 6),
+      Array(7, 8, 9)
+    )
+    Screen.rehash(tab) should be (
+      Array(
+        Seq(1, 4, 7),
+        Seq(2, 5, 8),
+        Seq(3, 6, 9)
+      )
+    )
+  }
 }
 
