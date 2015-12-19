@@ -8,12 +8,12 @@ object Screen {
   def pixelsToTilesOffset(screenOffs: (Int, Int), tilePixels: Int): (Int, Int) =
     (screenOffs._1 / tilePixels, screenOffs._2 / tilePixels)
 
-  def shapesCoordsWithCutOffsets(tileOffset: (Int, Int)): Seq[ShapeCoord] =
+  def shapesCoordsWithCutOffsets(fromTile: (Int, Int), toTile: (Int, Int)): Seq[ShapeCoord] =
     List(
-      ShapeCoord(0, 0, Some(tileOffset._1), Some(tileOffset._2), None, None),
-      ShapeCoord(0, 1, Some(tileOffset._1), None, None, Some(tileOffset._2)),
-      ShapeCoord(1, 0, None, Some(tileOffset._2), Some(tileOffset._1), None),
-      ShapeCoord(1, 1, None, None, Some(tileOffset._1), Some(tileOffset._2))
+      ShapeCoord(0, 0, Some(fromTile._1), Some(fromTile._2), None, None),
+      ShapeCoord(0, 1, Some(fromTile._1), None, None, Some(toTile._2)),
+      ShapeCoord(1, 0, None, Some(fromTile._2), Some(toTile._1), None),
+      ShapeCoord(1, 1, None, None, Some(toTile._1), Some(toTile._2))
     )
 
   def cutFromCoords(terrain: Map[(Int, Int), Shape], coords: Seq[ShapeCoord]): Map[(Int, Int), Shape] =
@@ -55,7 +55,7 @@ object Screen {
     )
 
   def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape =
-    joinShapes(mapToTab(cutFromCoords(terrain, shapesCoordsWithCutOffsets(tileOffset))))
+    joinShapes(mapToTab(cutFromCoords(terrain, shapesCoordsWithCutOffsets(tileOffset, tileOffset))))
 
   def absModulo(a: Int, b: Int) = if(a < 0) b + a % b else a % b
 
