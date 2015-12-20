@@ -54,8 +54,12 @@ object Screen {
       tabOfShapes.map(rehash(_).map(joinRow)).reduce(_ ++ _)
     )
 
-  def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape =
-    joinShapes(mapToTab(cutFromCoords(terrain, shapesCoordsWithCutOffsets(tileOffset, tileOffset))))
+  def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape = {
+    val coords = shapesCoordsWithCutOffsets(tileOffset, (0, tileOffset._2))
+    val shapesMap = cutFromCoords(terrain, coords)
+    val shapesTab = mapToTab(shapesMap)
+    joinShapes(shapesTab)
+  }
 
   def absModulo(a: Int, b: Int) = if(a < 0) b + a % b else a % b
 

@@ -32,11 +32,12 @@ define( ['scripts/globals'], function (glob) {
     function drawShape(shape) {
       clearShapeSquare();
       ctx.fillStyle = "rgb(255,0,0)";
-      var shapeTiles = glob.shapeTiles;
+      var shapeTilesY = shape.length;
+      var shapeTilesX = shape[0].length;
       var tilePixels = glob.tilePixels;
       var i, j
-      for(i=0; i<shapeTiles; i+=1) {
-        for(j=0; j<shapeTiles; j+=1) {
+      for(i=0; i<shapeTilesX; i+=1) {
+        for(j=0; j<shapeTilesY; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
             ctx.fillRect(
               tilePixels * j,
