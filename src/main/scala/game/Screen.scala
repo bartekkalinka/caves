@@ -8,13 +8,15 @@ object Screen {
   def pixelsToTilesOffset(screenOffs: (Int, Int), tilePixels: Int): (Int, Int) =
     (screenOffs._1 / tilePixels, screenOffs._2 / tilePixels)
 
-  def shapesCoordsWithCutOffsets(fromTile: (Int, Int), toTile: (Int, Int)): Seq[ShapeCoord] =
-    List(
-      ShapeCoord(0, 0, Some(fromTile._1), Some(fromTile._2), None, None),
-      ShapeCoord(0, 1, Some(fromTile._1), None, None, Some(toTile._2)),
-      ShapeCoord(1, 0, None, Some(fromTile._2), Some(toTile._1), None),
-      ShapeCoord(1, 1, None, None, Some(toTile._1), Some(toTile._2))
-    )
+  def shapesCoordsWithCutOffsets(fromTile: (Int, Int), size: (Int, Int), toTile: (Int, Int)): Seq[ShapeCoord] =
+    Seq.tabulate(size._1 + 1, size._2 + 1)((x, y) => (x, y)).flatten.map {
+      case (x, y) =>
+        ShapeCoord(x, y,
+          if(x == 0) Some(fromTile._1) else None,
+          if(y == 0) Some(fromTile._2) else None,
+          if(x == size._1) Some(toTile._1) else None,
+          if(y == size._2) Some(toTile._2) else None)
+    }
 
   def cutFromCoords(terrain: Map[(Int, Int), Shape], coords: Seq[ShapeCoord]): Map[(Int, Int), Shape] =
     coords.map {
@@ -55,7 +57,7 @@ object Screen {
     )
 
   def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape = {
-    val coords = shapesCoordsWithCutOffsets(tileOffset, (0, tileOffset._2))
+    val coords = shapesCoordsWithCutOffsets(tileOffset, (1, 1), tileOffset)
     val shapesMap = cutFromCoords(terrain, coords)
     val shapesTab = mapToTab(shapesMap)
     joinShapes(shapesTab)
