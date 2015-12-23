@@ -44,7 +44,7 @@ object Screen {
   def joinRow(row: Seq[Array[Boolean]]): Array[Boolean] = row.reduce(_ ++ _)
 
   def rehash[A](oneWay: Seq[Array[A]]): Array[Seq[A]] = {
-    def rehashAcc[B](acc: Array[Seq[B]], oneWay: Seq[Array[B]]): Array[Seq[B]] = {
+    def rehashAcc(acc: Array[Seq[A]], oneWay: Seq[Array[A]]): Array[Seq[A]] = {
       if(oneWay.head.isEmpty) acc
       else rehashAcc(acc :+ oneWay.map(_.head), oneWay.map(_.tail))
     }
