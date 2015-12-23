@@ -28,8 +28,8 @@ object Screen {
     }.toMap
 
   def mapKeysDims(map: Map[(Int, Int), Shape]): (Seq[Int], Seq[Int]) = (
-    map.keys.map(_._1).toSeq.distinct,
-    map.keys.map(_._2).toSeq.distinct
+    map.keys.map(_._1).toSeq.distinct.sortBy(identity),
+    map.keys.map(_._2).toSeq.distinct.sortBy(identity)
   )
 
   def mapToTab(cutShapes: Map[(Int, Int), Shape]): Seq[Seq[Array[Array[Boolean]]]] = {
@@ -57,7 +57,7 @@ object Screen {
     )
 
   def cutDisplayed(terrain: Map[(Int, Int), Shape], tileOffset: (Int, Int)): Shape = {
-    val coords = shapesCoordsWithCutOffsets(tileOffset, (1, 1), (48, 48))
+    val coords = shapesCoordsWithCutOffsets(tileOffset, (2, 2), tileOffset)
     val shapesMap = cutFromCoords(terrain, coords)
     val shapesTab = mapToTab(shapesMap)
     joinShapes(shapesTab)
