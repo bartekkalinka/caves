@@ -67,14 +67,18 @@ object Screen {
 
   def fluentDiv(a: Int, b: Int) = if(a < 0) a / b - 1 else a / b
 
+  def getTerrainFromGenerator(shapeCoord: (Int, Int)): Map[(Int, Int), Shape] = {
+    val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
+    val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
+    terrainCoords.map { case (dx, dy) =>
+      ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
+  }
+
   def calculate(player: Player, tilePixels: Int): Shape = {
     val pix = pixelsPerShape(tilePixels)
     val shapeCoord = (fluentDiv(player.x, pix), fluentDiv(player.y, pix))
     val screenOffs = (absModulo(player.x, pix), absModulo(player.y, pix))
-    val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
-    val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
-    val terrain: Map[(Int, Int), Shape] = terrainCoords.map { case (dx, dy) =>
-      ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
+    val terrain: Map[(Int, Int), Shape] = getTerrainFromGenerator(shapeCoord)
     cutDisplayed(terrain, pixelsToTilesOffset(screenOffs, tilePixels))
   }
 }
