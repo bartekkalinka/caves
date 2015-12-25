@@ -41,6 +41,8 @@ object Const {
   val initTilePixels = 64 / baseMultiplier
   val moveStep = 15
   val zoomFactor = Math.sqrt(1.5)
+  val screenWidth = 768
+  val screenHeight = 500
 }
 
 case class State(player: Player, score: Int, tilePixels: Int)
