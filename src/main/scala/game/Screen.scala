@@ -79,10 +79,10 @@ object Screen {
   def calculate(player: Player, tilePixels: Int): Shape = {
     val pix = pixelsPerShape(tilePixels)
     val shapeOffset = (fluentDiv(player.x, pix), fluentDiv(player.y, pix))
+    val terrain: Map[(Int, Int), Shape] = getTerrainFromGenerator(shapeOffset)
     val leftPixelOffset = (absModulo(player.x, pix), absModulo(player.y, pix))
     val shapeSpan = ((leftPixelOffset._1 + Const.screenWidth) / pix, (leftPixelOffset._2 + Const. screenHeight) / pix)
     val rightPixelOffset = ((leftPixelOffset._1 + Const.screenWidth) % pix, (leftPixelOffset._2 + Const. screenHeight) % pix)
-    val terrain: Map[(Int, Int), Shape] = getTerrainFromGenerator(shapeOffset)
     val cutParams = CutParams(pixelsToTilesOffset(leftPixelOffset, tilePixels),
       shapeSpan, pixelsToTilesOffset(rightPixelOffset, tilePixels))
     cutDisplayed(terrain, cutParams)

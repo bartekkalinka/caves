@@ -25,15 +25,15 @@ class LastElemOption[T]() extends DetachedStage[T, Option[T]] {
 object GameFlow {
   def mainTick: Source[Unit, Cancellable] = Source.tick(1 seconds, 50 millis, ())
 
-  private def zipWithNode[A](implicit builder: FlowGraph.Builder[Unit]): FanInShape2[Unit, A, A] =  {
+  private def zipWithNode[A](implicit builder: GraphDSL.Builder[Unit]): FanInShape2[Unit, A, A] =  {
     val zipWith = ZipWith[Unit, A, A]((a: Unit, i: A) => i)
     val zipWithSmallBuffer = zipWith.withAttributes(Attributes.inputBuffer(initial = 1, max = 1))
     builder.add(zipWithSmallBuffer)
   }
 
   def flow(sender: String): Flow[UserInput, game.Broadcast, Unit] =
-    Flow.fromGraph(FlowGraph.create() { implicit builder: FlowGraph.Builder[Unit] =>
-      import FlowGraph.Implicits._
+    Flow.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[Unit] =>
+      import GraphDSL.Implicits._
       val front = Flow[game.UserInput].map(identity)
       val frontNode = builder.add(front)
       val sync = frontNode.outlet.transform(() => new LastElemOption[UserInput]())
@@ -44,7 +44,7 @@ object GameFlow {
 
       mainTick ~> zipNode.in0
       sync.outlet ~> zipNode.in1
-      zipNode.out ~> stateNode.inlet
-      FlowShape(frontNode.inlet, broadcast.outlet)
+      zipNode.out ~> stateNode.in
+      FlowShape(frontNode.in, broadcast.outlet)
   })
 }
