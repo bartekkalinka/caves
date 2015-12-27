@@ -69,8 +69,8 @@ object Screen {
 
   def fluentDiv(a: Int, b: Int) = if(a < 0) a / b - 1 else a / b
 
-  def getTerrainFromGenerator(shapeOffset: (Int, Int)): Map[(Int, Int), Shape] = {
-    val terrainMatrix = Seq.tabulate(4, 4)((x, y) => (x, y)).flatten
+  def getTerrainFromGenerator(shapeOffset: (Int, Int), shapeSpan: (Int, Int)): Map[(Int, Int), Shape] = {
+    val terrainMatrix = Seq.tabulate(shapeSpan._1 + 1, shapeSpan._2 + 1)((x, y) => (x, y)).flatten
     val terrainCoords = shapeOffset match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
     terrainCoords.map { case (dx, dy) =>
       ((dx - shapeOffset._1, dy - shapeOffset._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
@@ -79,9 +79,9 @@ object Screen {
   def calculate(player: Player, tilePixels: Int): Shape = {
     val pix = pixelsPerShape(tilePixels)
     val shapeOffset = (fluentDiv(player.x, pix), fluentDiv(player.y, pix))
-    val terrain: Map[(Int, Int), Shape] = getTerrainFromGenerator(shapeOffset)
     val leftPixelOffset = (absModulo(player.x, pix), absModulo(player.y, pix))
     val shapeSpan = ((leftPixelOffset._1 + Const.screenWidth) / pix, (leftPixelOffset._2 + Const. screenHeight) / pix)
+    val terrain: Map[(Int, Int), Shape] = getTerrainFromGenerator(shapeOffset, shapeSpan)
     val rightPixelOffset = ((leftPixelOffset._1 + Const.screenWidth) % pix, (leftPixelOffset._2 + Const. screenHeight) % pix)
     val cutParams = CutParams(pixelsToTilesOffset(leftPixelOffset, tilePixels),
       shapeSpan, pixelsToTilesOffset(rightPixelOffset, tilePixels))
