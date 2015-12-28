@@ -36,11 +36,12 @@ function onOpen(evt) {
 function onClose(evt) {
 }
 function onMessage(evt) {
-   var obj = JSON.parse(evt.data)
-   glob.tilePixels = obj.tilePixels
+   var obj = JSON.parse(evt.data);
+   glob.tilePixels = obj.tilePixels;
    draw.clearCanvas();
-   $("#debug").html(obj.tilePixels)
-   draw.drawShape(obj.shape.tiles)
+   $("#debug").html(obj.tilePixels);
+   draw.drawShape(obj.shape.tiles);
+   draw.drawPlayer();
 }
 function onError(evt) {
 }

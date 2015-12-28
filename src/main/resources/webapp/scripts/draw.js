@@ -50,9 +50,19 @@ define( ['scripts/globals'], function (glob) {
       }
     }
 
+    function drawPlayer() {
+      var imageObj = new Image();
+      imageObj.onload = function() {
+        ctx.drawImage(this, 0, 0);
+      };
+
+      imageObj.src = "gfx/player_face.PNG";
+    }
+
     return {
         "initGrid" : initGrid,
         "clearCanvas" : clearCanvas,
-        "drawShape" : drawShape
+        "drawShape" : drawShape,
+        "drawPlayer" : drawPlayer
     };
 });
