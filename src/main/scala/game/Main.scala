@@ -15,9 +15,9 @@ object Main {
     val interface = "localhost"
     val port = 8080
     val service = new Webservice()
-    val binding = Http().bindAndHandle(service.route, interface, port)
+    val bindingF = Http().bindAndHandle(service.route, interface, port)
 
-    binding.onComplete {
+    bindingF.onComplete {
       case Success(binding) ⇒
         val localAddress = binding.localAddress
         println(s"Server is listening on ${localAddress.getHostName}:${localAddress.getPort}")
