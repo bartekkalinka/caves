@@ -50,13 +50,16 @@ define( ['scripts/globals'], function (glob) {
       }
     }
 
-    function drawPlayer() {
-      var imageObj = new Image();
-      imageObj.onload = function() {
-        ctx.drawImage(this, 0, 0);
-      };
+    var playerImage = new Image();
 
-      imageObj.src = "gfx/player_face.PNG";
+    function loadImage() {
+      playerImage.src = "gfx/player_face.PNG";
+    }
+
+    loadImage();
+
+    function drawPlayer() {
+      ctx.drawImage(playerImage, 0, 0);
     }
 
     return {
