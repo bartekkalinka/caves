@@ -59,7 +59,7 @@ define( ['scripts/globals'], function (glob) {
     loadImage();
 
     function drawPlayer() {
-      ctx.drawImage(playerImage, 0, 0);
+      ctx.drawImage(playerImage, 0, 0, glob.tilePixels, glob.tilePixels * 2);
     }
 
     return {
