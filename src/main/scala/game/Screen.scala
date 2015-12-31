@@ -76,13 +76,16 @@ object Screen {
       ((dx - shapeOffset._1, dy - shapeOffset._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
   }
 
+  def playerToLeftCorner(player: Player): (Int, Int) = (player.x - Const.screenWidth / 2, player.y - Const.screenWidth / 2)
+
   def calculate(player: Player, tilePixels: Int): Shape = {
-    val pix = pixelsPerShape(tilePixels)
-    val shapeOffset = (fluentDiv(player.x, pix), fluentDiv(player.y, pix))
-    val leftPixelOffset = (absModulo(player.x, pix), absModulo(player.y, pix))
-    val shapeSpan = ((leftPixelOffset._1 + Const.screenWidth) / pix, (leftPixelOffset._2 + Const. screenHeight) / pix)
+    val pixPerShape = pixelsPerShape(tilePixels)
+    val leftCornerCoord = playerToLeftCorner(player)
+    val shapeOffset = (fluentDiv(leftCornerCoord._1, pixPerShape), fluentDiv(leftCornerCoord._2, pixPerShape))
+    val leftPixelOffset = (absModulo(leftCornerCoord._1, pixPerShape), absModulo(leftCornerCoord._2, pixPerShape))
+    val shapeSpan = ((leftPixelOffset._1 + Const.screenWidth) / pixPerShape, (leftPixelOffset._2 + Const. screenHeight) / pixPerShape)
     val terrain: Map[(Int, Int), Shape] = getTerrainFromGenerator(shapeOffset, shapeSpan)
-    val rightPixelOffset = ((leftPixelOffset._1 + Const.screenWidth) % pix, (leftPixelOffset._2 + Const. screenHeight) % pix)
+    val rightPixelOffset = ((leftPixelOffset._1 + Const.screenWidth) % pixPerShape, (leftPixelOffset._2 + Const. screenHeight) % pixPerShape)
     val cutParams = CutParams(pixelsToTilesOffset(leftPixelOffset, tilePixels),
       shapeSpan, pixelsToTilesOffset(rightPixelOffset, tilePixels))
     cutDisplayed(terrain, cutParams)
