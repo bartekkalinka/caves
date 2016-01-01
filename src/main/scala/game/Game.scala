@@ -6,7 +6,7 @@ case class PackedShape(tiles: Array[String])
 
 case object Tick
 case class Delay(counter: Int)
-case class StateData(player: Player)
+case class StateData(player: Player, moveStepInPixels: Int)
 case class UserInput(dir: String)
 case class StepData(state: StateData, input: Option[UserInput])
 
@@ -22,10 +22,10 @@ case class StateMod(inputDrivenModOpt: Option[InputDrivenMod])
 object Step {
   def step(data: StepData): StateMod = {
     val inputDrivenModOpt = data.input.map  {
-      case UserInput("right") => PlayerMove(Const.moveStep, 0)
-      case UserInput("up") => PlayerMove(0, -Const.moveStep)
-      case UserInput("left") => PlayerMove(-Const.moveStep, 0)
-      case UserInput("down") => PlayerMove(0, Const.moveStep)
+      case UserInput("right") => PlayerMove(data.state.moveStepInPixels, 0)
+      case UserInput("up") => PlayerMove(0, -data.state.moveStepInPixels)
+      case UserInput("left") => PlayerMove(-data.state.moveStepInPixels, 0)
+      case UserInput("down") => PlayerMove(0, data.state.moveStepInPixels)
       case UserInput("zoomin") => Zoom(true)
       case UserInput("zoomout") => Zoom(false)
     }
@@ -39,7 +39,7 @@ object Const {
   private val baseMultiplier = Math.pow(2, Const.targetNoiseDetail).toInt
   val tilesPerShape = baseTilesPerShape * baseMultiplier
   val initTilePixels = 64 / baseMultiplier
-  val moveStep = 15
+  val moveStepInTiles = 1
   val zoomFactor = Math.sqrt(1.5)
   val screenWidth = 768
   val screenHeight = 500
@@ -58,10 +58,12 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(Player(15, 0), 0, Const.initTilePixels)
+  def init: State = State(Player(0, 0), 0, Const.initTilePixels)
 
-  def iteration(state: State, input: Option[UserInput]): State =
-    state.applyMod(Step.step(StepData(StateData(state.player), input)))
+  def iteration(state: State, input: Option[UserInput]): State = {
+    val stepData = StepData(StateData(state.player, Const.moveStepInTiles * state.tilePixels), input)
+    state.applyMod(Step.step(stepData))
+  }
 }
 
 case class Broadcast(player: Player, tilePixels: Int, shape: PackedShape)

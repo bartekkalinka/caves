@@ -59,7 +59,7 @@ define( ['scripts/globals'], function (glob) {
     loadImage();
 
     function drawPlayer() {
-      ctx.drawImage(playerImage, canvas.width / 2, canvas.height / 2, glob.tilePixels, glob.tilePixels * 2);
+      ctx.drawImage(playerImage, (canvas.width / 2) - ((canvas.width / 2) % glob.tilePixels), (canvas.height / 2) - ((canvas.height / 2) % glob.tilePixels), glob.tilePixels, glob.tilePixels * 2);
     }
 
     return {
