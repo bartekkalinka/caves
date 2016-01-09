@@ -11,8 +11,7 @@ class ScreenSpec extends FlatSpec with Matchers {
       (1, 1) -> Shape(Array(Array(true, false), Array(false, false)))
     )
     val tileOffset = (1, 1)
-    val result = Screen.cutDisplayed(terrain, tileOffset)
-    Screen.cutDisplayed(terrain, tileOffset).tiles.toSeq.map(_.toSeq) should be (
+    Screen.cutDisplayed(terrain, CutParams(tileOffset, (1, 1), tileOffset)).tiles.toSeq.map(_.toSeq) should be (
       Seq(Seq(true, false), Seq(true, true))
     )
   }
