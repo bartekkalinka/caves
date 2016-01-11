@@ -78,7 +78,12 @@ object Screen {
 
   def playerToLeftCorner(player: Player): (Int, Int) = (player.x - Const.screenWidth / 2, player.y - Const.screenWidth / 2)
 
-  def calculate(player: Player, tilePixels: Int): Shape = {
+  def playerOnScreen(tilePixels: Int): PlayerOnScreen = {
+    def tileEven(coord: Int) = coord - coord % tilePixels
+    PlayerOnScreen(tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
+  }
+
+  def calculate(player: Player, tilePixels: Int): (Shape, PlayerOnScreen) = {
     val pixPerShape = pixelsPerShape(tilePixels)
     val leftCornerCoord = playerToLeftCorner(player)
     val shapeOffset = (fluentDiv(leftCornerCoord._1, pixPerShape), fluentDiv(leftCornerCoord._2, pixPerShape))
@@ -88,7 +93,7 @@ object Screen {
     val rightPixelOffset = ((leftPixelOffset._1 + Const.screenWidth) % pixPerShape, (leftPixelOffset._2 + Const.screenHeight) % pixPerShape)
     val cutParams = CutParams(pixelsToTilesOffset(leftPixelOffset, tilePixels),
       shapeSpan, pixelsToTilesOffset(rightPixelOffset, tilePixels))
-    cutDisplayed(terrain, cutParams)
+    (cutDisplayed(terrain, cutParams), playerOnScreen(tilePixels))
   }
 }
 

@@ -66,14 +66,15 @@ object State {
   }
 }
 
-case class Broadcast(player: Player, tilePixels: Int, shape: PackedShape)
+case class PlayerOnScreen(x: Int, y: Int)
+case class Broadcast(player: PlayerOnScreen, tilePixels: Int, shape: PackedShape)
 
 object Broadcast
 {
   private def packShape(shape: Shape): PackedShape = PackedShape(shape.tiles.map(_.map(if(_) "1" else "0").reduce(_ + _)))
 
   def fromState(state: State): Broadcast = {
-    val shape = Screen.calculate(state.player, state.tilePixels)
-    Broadcast(state.player, state.tilePixels, packShape(shape))
+    val (shape, playerOnScreen) = Screen.calculate(state.player, state.tilePixels)
+    Broadcast(playerOnScreen, state.tilePixels, packShape(shape))
   }
 }
