@@ -1,6 +1,6 @@
 package game
 
-case class Player(x: Int, y: Int)
+case class Player(x: Int, y: Int, faceDirection: FaceDirection)
 case class Shape(tiles: Array[Array[Boolean]])
 case class PackedShape(tiles: Array[String])
 
@@ -56,7 +56,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
 {
   def applyMod(mod: StateMod): State = {
     mod.inputDrivenModOpt.map {
-      case PlayerMove(xMod, yMod, _) => copy(player = player.copy(x = player.x + xMod, y = player.y + yMod))
+      case PlayerMove(xMod, yMod, faceDir) => copy(player = player.copy(x = player.x + xMod, y = player.y + yMod, faceDirection = faceDir))
       case Zoom(in) => copy(tilePixels =
         if(in) math.floor(tilePixels * Const.zoomFactor).toInt
         else math.floor(tilePixels / Const.zoomFactor).toInt)
@@ -65,7 +65,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(Player(0, 0), 0, Const.initTilePixels)
+  def init: State = State(Player(0, 0, FaceDirection.Straight), 0, Const.initTilePixels)
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(StateData(state.player, Const.moveStepInTiles * state.tilePixels), input)
@@ -74,7 +74,7 @@ object State {
 }
 
 case class PlayerOnScreen(x: Int, y: Int)
-case class Broadcast(player: PlayerOnScreen, tilePixels: Int, shape: PackedShape)
+case class Broadcast(player: PlayerOnScreen, faceDirection: FaceDirection, tilePixels: Int, shape: PackedShape)
 
 object Broadcast
 {
@@ -82,6 +82,6 @@ object Broadcast
 
   def fromState(state: State): Broadcast = {
     val (shape, playerOnScreen) = Screen.calculate(state.player, state.tilePixels)
-    Broadcast(playerOnScreen, state.tilePixels, packShape(shape))
+    Broadcast(playerOnScreen, state.player.faceDirection, state.tilePixels, packShape(shape))
   }
 }
