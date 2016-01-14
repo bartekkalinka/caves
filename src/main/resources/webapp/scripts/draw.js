@@ -50,15 +50,26 @@ define( ['scripts/globals'], function (glob) {
       }
     }
 
-    var playerImage = new Image();
+    var playerFrontImage = new Image();
+    var playerLeftImage = new Image();
+    var playerRightImage = new Image();
 
-    function loadImage() {
-      playerImage.src = "gfx/player_face.PNG";
+    function loadImages() {
+      playerFrontImage.src = "gfx/player_face.PNG";
+      playerLeftImage.src = "gfx/player_left_1.PNG";
+      playerRightImage.src = "gfx/player_right_1.PNG";
     }
 
-    loadImage();
+    loadImages();
 
-    function drawPlayer(x, y) {
+    function drawPlayer(x, y, faceDirection) {
+      var playerImage;
+      if(faceDirection == "game.FaceDirection.Straight")
+        playerImage = playerFrontImage;
+      else if(faceDirection == "game.FaceDirection.Left")
+        playerImage = playerLeftImage;
+      else if(faceDirection == "game.FaceDirection.Right")
+        playerImage = playerRightImage;
       ctx.drawImage(playerImage, x, y, glob.tilePixels, glob.tilePixels * 2);
     }
 

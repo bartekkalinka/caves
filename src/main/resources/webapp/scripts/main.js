@@ -41,7 +41,7 @@ function onMessage(evt) {
    draw.clearCanvas();
    $("#debug").html(obj.tilePixels);
    draw.drawShape(obj.shape.tiles);
-   draw.drawPlayer(obj.player.x, obj.player.y);
+   draw.drawPlayer(obj.player.x, obj.player.y, obj.faceDirection[0]);
 }
 function onError(evt) {
 }
