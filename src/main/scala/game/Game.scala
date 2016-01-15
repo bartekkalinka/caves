@@ -20,11 +20,8 @@ object FaceDirection {
 sealed trait InputDrivenMod
 case class PlayerMove(xMod: Int, yMod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends InputDrivenMod
 case class Zoom(in: Boolean) extends InputDrivenMod
-sealed trait OtherMod
-case class NewOther(x: Int) extends OtherMod
-case class OtherMove(yMod: Int) extends OtherMod
-case object DelayCount extends OtherMod
-case class StateMod(inputDrivenModOpt: Option[InputDrivenMod])
+case class OtherMod(defaultFaceDirection: FaceDirection = FaceDirection.Straight)
+case class StateMod(inputDrivenModOpt: Option[InputDrivenMod], otherMod: OtherMod = OtherMod())
 
 object Step {
   def step(data: StepData): StateMod = {
@@ -55,12 +52,13 @@ object Const {
 case class State(player: Player, score: Int, tilePixels: Int)
 {
   def applyMod(mod: StateMod): State = {
+    val newState = this.copy(player = player.copy(faceDirection = mod.otherMod.defaultFaceDirection))
     mod.inputDrivenModOpt.map {
-      case PlayerMove(xMod, yMod, faceDir) => copy(player = player.copy(x = player.x + xMod, y = player.y + yMod, faceDirection = faceDir))
-      case Zoom(in) => copy(tilePixels =
+      case PlayerMove(xMod, yMod, faceDir) => newState.copy(player = player.copy(x = player.x + xMod, y = player.y + yMod, faceDirection = faceDir))
+      case Zoom(in) => newState.copy(tilePixels =
         if(in) math.floor(tilePixels * Const.zoomFactor).toInt
         else math.floor(tilePixels / Const.zoomFactor).toInt)
-    }.getOrElse(this)
+    }.getOrElse(newState)
   }
 }
 
