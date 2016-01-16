@@ -39,13 +39,13 @@ function onMessage(evt) {
    var obj = JSON.parse(evt.data);
    glob.tilePixels = obj.tilePixels;
    draw.clearCanvas();
-   $("#debug").html(obj.tilePixels);
    draw.drawShape(obj.shape.tiles);
    draw.drawPlayer(obj.player.x, obj.player.y, obj.faceDirection[0]);
 }
 function onError(evt) {
 }
 function doSend(message) {
+    $("#debug").html(message);
     websocket.send(message);
 }
 
@@ -54,16 +54,16 @@ function doKeyDown(e) {
   switch (e.keyCode)
   {
   case 37:
-      doSend("left");
+      doSend("leftKeyDown");
       break;
   case 38:
-      doSend("up");
+      doSend("upKeyDown");
       break;
   case 39:
-      doSend("right");
+      doSend("rightKeyDown");
       break;
   case 40:
-      doSend("down");
+      doSend("downKeyDown");
       break;
   case 107: //+
       doSend("zoomin");
@@ -73,7 +73,25 @@ function doKeyDown(e) {
       break;
   }
 }
+function doKeyUp(e) {
+  switch (e.keyCode)
+  {
+  case 37:
+      doSend("leftKeyUp");
+      break;
+  case 38:
+      doSend("upKeyUp");
+      break;
+  case 39:
+      doSend("rightKeyUp");
+      break;
+  case 40:
+      doSend("downKeyUp");
+      break;
+  }
+}
 window.addEventListener("keydown", doKeyDown, true);
+window.addEventListener("keyup", doKeyUp, true);
 init();
 });
 });

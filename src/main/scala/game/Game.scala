@@ -25,11 +25,11 @@ case class StateMod(inputDrivenModOpt: Option[InputDrivenMod], otherMod: OtherMo
 
 object Step {
   def step(data: StepData): StateMod = {
-    val inputDrivenModOpt = data.input.map  {
-      case UserInput("right") => PlayerMove(data.state.moveStepInPixels, 0, FaceDirection.Right)
-      case UserInput("up") => PlayerMove(0, -data.state.moveStepInPixels)
-      case UserInput("left") => PlayerMove(-data.state.moveStepInPixels, 0, FaceDirection.Left)
-      case UserInput("down") => PlayerMove(0, data.state.moveStepInPixels)
+    val inputDrivenModOpt = data.input.collect  {
+      case UserInput("rightKeyDown") => PlayerMove(data.state.moveStepInPixels, 0, FaceDirection.Right)
+      case UserInput("upKeyDown") => PlayerMove(0, -data.state.moveStepInPixels)
+      case UserInput("leftKeyDown") => PlayerMove(-data.state.moveStepInPixels, 0, FaceDirection.Left)
+      case UserInput("downKeyDown") => PlayerMove(0, data.state.moveStepInPixels)
       case UserInput("zoomin") => Zoom(true)
       case UserInput("zoomout") => Zoom(false)
     }
