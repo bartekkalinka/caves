@@ -45,7 +45,7 @@ function onMessage(evt) {
 function onError(evt) {
 }
 function doSend(message) {
-    $("#debug").html(message);
+    //$("#debug").html(message);
     websocket.send(message);
 }
 

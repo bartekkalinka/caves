@@ -1,6 +1,6 @@
 package game
 
-case class Player(x: Int, y: Int, faceDirection: FaceDirection)
+case class Player(x: Int, y: Int, vectorX: Int, vectorY: Int, faceDirection: FaceDirection)
 case class Shape(tiles: Array[Array[Boolean]])
 case class PackedShape(tiles: Array[String])
 
@@ -18,7 +18,7 @@ object FaceDirection {
 }
 
 sealed trait InputDrivenMod
-case class PlayerMove(xMod: Int, yMod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends InputDrivenMod
+case class PlayerVector(xMod: Int, yMod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends InputDrivenMod
 case class Zoom(in: Boolean) extends InputDrivenMod
 case class OtherMod(defaultFaceDirection: FaceDirection = FaceDirection.Straight)
 case class StateMod(inputDrivenModOpt: Option[InputDrivenMod], otherMod: OtherMod = OtherMod())
@@ -26,12 +26,13 @@ case class StateMod(inputDrivenModOpt: Option[InputDrivenMod], otherMod: OtherMo
 object Step {
   def step(data: StepData): StateMod = {
     val inputDrivenModOpt = data.input.collect  {
-      case UserInput("rightKeyDown") => PlayerMove(data.state.moveStepInPixels, 0, FaceDirection.Right)
-      case UserInput("upKeyDown") => PlayerMove(0, -data.state.moveStepInPixels)
-      case UserInput("leftKeyDown") => PlayerMove(-data.state.moveStepInPixels, 0, FaceDirection.Left)
-      case UserInput("downKeyDown") => PlayerMove(0, data.state.moveStepInPixels)
+      case UserInput("rightKeyDown") => PlayerVector(data.state.moveStepInPixels, 0, FaceDirection.Right)
+      case UserInput("upKeyDown") => PlayerVector(0, -data.state.moveStepInPixels)
+      case UserInput("leftKeyDown") => PlayerVector(-data.state.moveStepInPixels, 0, FaceDirection.Left)
+      case UserInput("downKeyDown") => PlayerVector(0, data.state.moveStepInPixels)
       case UserInput("zoomin") => Zoom(true)
       case UserInput("zoomout") => Zoom(false)
+      case ui: UserInput if ui.dir.endsWith("Up") => PlayerVector(0, 0)
     }
     StateMod(inputDrivenModOpt)
   } 
@@ -52,9 +53,12 @@ object Const {
 case class State(player: Player, score: Int, tilePixels: Int)
 {
   def applyMod(mod: StateMod): State = {
-    val newState = this.copy(player = player.copy(faceDirection = mod.otherMod.defaultFaceDirection))
+    val newState = this.copy(player = player.copy(
+      x = player.x + player.vectorX, y = player.y + player.vectorY
+    ))
     mod.inputDrivenModOpt.map {
-      case PlayerMove(xMod, yMod, faceDir) => newState.copy(player = player.copy(x = player.x + xMod, y = player.y + yMod, faceDirection = faceDir))
+      case PlayerVector(newX, newY, faceDir) =>
+        newState.copy(player = newState.player.copy(vectorX = newX, vectorY = newY, faceDirection = faceDir))
       case Zoom(in) => newState.copy(tilePixels =
         if(in) math.floor(tilePixels * Const.zoomFactor).toInt
         else math.floor(tilePixels / Const.zoomFactor).toInt)
@@ -63,7 +67,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(Player(0, 0, FaceDirection.Straight), 0, Const.initTilePixels)
+  def init: State = State(Player(0, 0, 0, 0, FaceDirection.Straight), 0, Const.initTilePixels)
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(StateData(state.player, Const.moveStepInTiles * state.tilePixels), input)
