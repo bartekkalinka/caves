@@ -23,21 +23,23 @@ case class Zoom(in: Boolean) extends StateMod
 case class SetPlayerCoord(xMod: Int, yMod: Int) extends StateMod
 
 object Step {
+  private def stateDrivenMod(state: StateData): StateMod = {
+    val player = state.player
+    SetPlayerCoord(player.x + player.vectorX, player.y + player.vectorY)
+  }
+
+  private def inputDrivenModOpt(state: StateData, input: Option[UserInput]): Option[StateMod] = input.collect  {
+    case UserInput("rightKeyDown") => SetPlayerVector(state.moveStepInPixels, 0, FaceDirection.Right)
+    case UserInput("upKeyDown") => SetPlayerVector(0, -state.moveStepInPixels)
+    case UserInput("leftKeyDown") => SetPlayerVector(-state.moveStepInPixels, 0, FaceDirection.Left)
+    case UserInput("downKeyDown") => SetPlayerVector(0, state.moveStepInPixels)
+    case UserInput("zoomin") => Zoom(true)
+    case UserInput("zoomout") => Zoom(false)
+    case ui: UserInput if ui.dir.endsWith("Up") => SetPlayerVector(0, 0)
+  }
+
   def step(data: StepData): Seq[StateMod] = {
-    val stateDrivenMod = {
-      val player = data.state.player
-      SetPlayerCoord(player.x + player.vectorX, player.y + player.vectorY)
-    }
-    val inputDrivenModOpt = data.input.collect  {
-      case UserInput("rightKeyDown") => SetPlayerVector(data.state.moveStepInPixels, 0, FaceDirection.Right)
-      case UserInput("upKeyDown") => SetPlayerVector(0, -data.state.moveStepInPixels)
-      case UserInput("leftKeyDown") => SetPlayerVector(-data.state.moveStepInPixels, 0, FaceDirection.Left)
-      case UserInput("downKeyDown") => SetPlayerVector(0, data.state.moveStepInPixels)
-      case UserInput("zoomin") => Zoom(true)
-      case UserInput("zoomout") => Zoom(false)
-      case ui: UserInput if ui.dir.endsWith("Up") => SetPlayerVector(0, 0)
-    }
-    List(Some(stateDrivenMod), inputDrivenModOpt).flatten
+    List(stateDrivenMod(data.state)) ++ inputDrivenModOpt(data.state, data.input).toList
   } 
 }
 
@@ -61,7 +63,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
         x = xMod, y = yMod
       ))
     case SetPlayerVector(newX, newY, faceDir) =>
-      this.copy(player = this.player.copy(vectorX = newX, vectorY = newY, faceDirection = faceDir))
+      this.copy(player = player.copy(vectorX = newX, vectorY = newY, faceDirection = faceDir))
     case Zoom(in) => this.copy(tilePixels =
       if (in) math.floor(tilePixels * Const.zoomFactor).toInt
       else math.floor(tilePixels / Const.zoomFactor).toInt)
