@@ -76,7 +76,7 @@ object Screen {
       ((dx - shapeOffset._1, dy - shapeOffset._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
   }
 
-  def playerToLeftCorner(player: Player): (Int, Int) = (player.x - Const.screenWidth / 2, player.y - Const.screenWidth / 2)
+  def playerToLeftCorner(player: Player): (Int, Int) = (player.coord._1 - Const.screenWidth / 2, player.coord._2 - Const.screenWidth / 2)
 
   def playerOnScreen(tilePixels: Int): PlayerOnScreen = {
     def tileEven(coord: Int) = coord - coord % tilePixels
