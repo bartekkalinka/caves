@@ -1,6 +1,6 @@
 package game
 
-case class Player(coord: (Int, Int), vector: (Int, Int), faceDirection: FaceDirection)
+case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection)
 case class Shape(tiles: Array[Array[Boolean]])
 case class PackedShape(tiles: Array[String])
 
@@ -19,12 +19,19 @@ object FaceDirection {
 sealed trait StateMod
 case class SetPlayerVector(mod: (Int, Int), faceDirection: FaceDirection = FaceDirection.Straight) extends StateMod
 case class Zoom(in: Boolean) extends StateMod
-case class SetPlayerCoord(mod: (Int, Int)) extends StateMod
+case class SetPlayerCoord(onMap: (Int, Int), onScreen: (Int, Int)) extends StateMod
 
 object Step {
-  private def stateDrivenMod(state: State): StateMod = {
-    val player = state.player
-    SetPlayerCoord((player.coord._1 + player.vector._1, player.coord._2 + player.vector._2))
+  private def stateDrivenMod(state: State): StateMod =
+    SetPlayerCoord(movePlayerOnMap(state.player), playerOnScreen(state.tilePixels))
+
+  private def movePlayerOnMap(player: Player): (Int, Int) = {
+    (player.onMap._1 + player.vector._1, player.onMap._2 + player.vector._2)
+  }
+
+  private def playerOnScreen(tilePixels: Int): (Int, Int) = {
+    def tileEven(coord: Int) = coord - coord % tilePixels
+    (tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
   }
 
   private def moveStepInPixels(tilePixels: Int) = Const.moveStepInTiles * tilePixels
@@ -60,8 +67,8 @@ object Const {
 case class State(player: Player, score: Int, tilePixels: Int)
 {
   def applyMod(mod: StateMod): State = mod match {
-    case SetPlayerCoord(newCoord) =>
-      this.copy(player = player.copy(coord = newCoord))
+    case SetPlayerCoord(onMap, onScreen) =>
+      this.copy(player = player.copy(onMap = onMap, onScreen = onScreen))
     case SetPlayerVector(newVector, faceDir) =>
       this.copy(player = player.copy(vector = newVector, faceDirection = faceDir))
     case Zoom(in) => this.copy(tilePixels =
@@ -71,7 +78,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(Player((0, 0), (0, 0), FaceDirection.Straight), 0, Const.initTilePixels)
+  def init: State = State(Player((0, 0), (0, 0), (0, 0), FaceDirection.Straight), 0, Const.initTilePixels)
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(state, input)
@@ -87,7 +94,8 @@ object Broadcast
   private def packShape(shape: Shape): PackedShape = PackedShape(shape.tiles.map(_.map(if(_) "1" else "0").reduce(_ + _)))
 
   def fromState(state: State): Broadcast = {
-    val (shape, playerOnScreen) = Screen.calculate(state.player, state.tilePixels)
+    val shape = Screen.calculate(state.player, state.tilePixels)
+    val playerOnScreen = PlayerOnScreen.tupled(state.player.onScreen)
     Broadcast(playerOnScreen, state.player.faceDirection, state.tilePixels, packShape(shape))
   }
 }

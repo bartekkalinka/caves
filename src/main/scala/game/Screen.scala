@@ -76,14 +76,10 @@ object Screen {
       ((dx - shapeOffset._1, dy - shapeOffset._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
   }
 
-  def playerToLeftCorner(player: Player): (Int, Int) = (player.coord._1 - Const.screenWidth / 2, player.coord._2 - Const.screenWidth / 2)
+  def playerToLeftCorner(player: Player): (Int, Int) = (player.onMap._1 - Const.screenWidth / 2, player.onMap._2 - Const.screenWidth / 2)
 
-  def playerOnScreen(tilePixels: Int): PlayerOnScreen = {
-    def tileEven(coord: Int) = coord - coord % tilePixels
-    PlayerOnScreen(tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
-  }
 
-  def calculate(player: Player, tilePixels: Int): (Shape, PlayerOnScreen) = {
+  def calculate(player: Player, tilePixels: Int): Shape = {
     val pixPerShape = pixelsPerShape(tilePixels)
     val leftCornerCoord = playerToLeftCorner(player)
     val shapeOffset = (fluentDiv(leftCornerCoord._1, pixPerShape), fluentDiv(leftCornerCoord._2, pixPerShape))
@@ -93,7 +89,7 @@ object Screen {
     val rightPixelOffset = ((leftPixelOffset._1 + Const.screenWidth) % pixPerShape, (leftPixelOffset._2 + Const.screenHeight) % pixPerShape)
     val cutParams = CutParams(pixelsToTilesOffset(leftPixelOffset, tilePixels),
       shapeSpan, pixelsToTilesOffset(rightPixelOffset, tilePixels))
-    (cutDisplayed(terrain, cutParams), playerOnScreen(tilePixels))
+    cutDisplayed(terrain, cutParams)
   }
 }
 

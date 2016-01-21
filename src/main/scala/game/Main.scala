@@ -3,7 +3,7 @@ package game
 import akka.actor._
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
-import scala.util.{ Success, Failure }
+import scala.util.{Try, Success, Failure}
 import websockets._
 import scala.concurrent.ExecutionContext.Implicits.global
 
@@ -13,7 +13,7 @@ object Main {
     implicit val materializer = ActorMaterializer()
 
     val interface = "localhost"
-    val port = 8080
+    val port = Try(sys.env("PORT").toInt).toOption.getOrElse(8080)
     val service = new Webservice()
     val bindingF = Http().bindAndHandle(service.route, interface, port)
 
