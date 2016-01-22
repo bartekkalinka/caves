@@ -12,7 +12,7 @@ object Main {
     implicit val system = ActorSystem()
     implicit val materializer = ActorMaterializer()
 
-    val interface = "localhost"
+    val interface = "0.0.0.0"
     val port = Try(sys.env("PORT").toInt).toOption.getOrElse(8080)
     val service = new Webservice()
     val bindingF = Http().bindAndHandle(service.route, interface, port)

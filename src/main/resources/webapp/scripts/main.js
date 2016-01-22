@@ -6,7 +6,7 @@ require.config({
 
 requirejs(['scripts/globals', 'scripts/draw'], function(glob, draw) {
 $(document).ready(function() {
-var wsUri = "ws://localhost:8080/game?name=aaa";
+var wsUri = "ws://" + window.location.hostname + ":" + window.location.port + "/game?name=aaa";
 var websocket;
 
 // INIT MODULE
