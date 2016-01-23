@@ -76,8 +76,8 @@ object Screen {
       ((dx - shapeOffset._1, dy - shapeOffset._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
   }
 
-  def playerToLeftCorner(player: Player): (Int, Int) = (player.onMap._1 - Const.screenWidth / 2, player.onMap._2 - Const.screenWidth / 2)
-
+  def playerToLeftCorner(player: Player): (Int, Int) =
+    (player.onMap._1 - player.onScreen._1, player.onMap._2 - player.onScreen._2)
 
   def calculate(player: Player, tilePixels: Int): Shape = {
     val pixPerShape = pixelsPerShape(tilePixels)

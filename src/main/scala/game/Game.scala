@@ -29,7 +29,7 @@ object Step {
     (player.onMap._1 + player.vector._1, player.onMap._2 + player.vector._2)
   }
 
-  private def playerOnScreen(tilePixels: Int): (Int, Int) = {
+  def playerOnScreen(tilePixels: Int): (Int, Int) = {
     def tileEven(coord: Int) = coord - coord % tilePixels
     (tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
   }
@@ -78,7 +78,8 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(Player((0, 0), (0, 0), (0, 0), FaceDirection.Straight), 0, Const.initTilePixels)
+  def init: State = State(Player((0, 0), (0, 0), Step.playerOnScreen(Const.initTilePixels),
+    FaceDirection.Straight), 0, Const.initTilePixels)
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(state, input)
