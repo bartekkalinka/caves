@@ -22,16 +22,27 @@ case class Zoom(in: Boolean) extends StateMod
 case class SetPlayerCoord(onMap: (Int, Int), onScreen: (Int, Int)) extends StateMod
 
 object Step {
-  private def stateDrivenMod(state: State): StateMod =
-    SetPlayerCoord(movePlayerOnMap(state.player), playerOnScreen(state.tilePixels))
-
-  private def movePlayerOnMap(player: Player): (Int, Int) = {
-    (player.onMap._1 + player.vector._1, player.onMap._2 + player.vector._2)
+  private def stateDrivenMod(state: State): StateMod = {
+    SetPlayerCoord(movePlayerOnMap(state.player),
+      movePlayerOnScreenIfStaysInTheMiddle(state.player))
   }
 
-  def playerOnScreen(tilePixels: Int): (Int, Int) = {
-    def tileEven(coord: Int) = coord - coord % tilePixels
-    (tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
+  private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
+    (coord._1 + vector._1, coord._2 + vector._2)
+
+  private def movePlayerOnMap(player: Player): (Int, Int) =
+    applyVector(player.onMap, player.vector)
+
+  private def movePlayerOnScreen(player: Player): (Int, Int) =
+    applyVector(player.onScreen, player.vector)
+
+  private def isInTheMiddleOfScreen(coord: (Int, Int)): Boolean =
+    math.abs(coord._1 - Const.screenWidth / 2) < Const.screenWidth / 4 &&
+    math.abs(coord._2 - Const.screenHeight / 2) < Const.screenHeight / 4
+
+  private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
+    val newPos = movePlayerOnScreen(player)
+    if(isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
   private def moveStepInPixels(tilePixels: Int) = Const.moveStepInTiles * tilePixels
@@ -78,7 +89,12 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(Player((0, 0), (0, 0), Step.playerOnScreen(Const.initTilePixels),
+  private def initPlayerOnScreen(tilePixels: Int): (Int, Int) = {
+    def tileEven(coord: Int) = coord - coord % tilePixels
+    (tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
+  }
+
+  def init: State = State(Player((0, 0), (0, 0), initPlayerOnScreen(Const.initTilePixels),
     FaceDirection.Straight), 0, Const.initTilePixels)
 
   def iteration(state: State, input: Option[UserInput]): State = {
