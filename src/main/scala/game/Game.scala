@@ -82,17 +82,20 @@ case class State(player: Player, score: Int, tilePixels: Int)
       this.copy(player = player.copy(onMap = onMap, onScreen = onScreen))
     case SetPlayerVector(newVector, faceDir) =>
       this.copy(player = player.copy(vector = newVector, faceDirection = faceDir))
-    case Zoom(in) => this.copy(tilePixels =
-      if (in) math.floor(tilePixels * Const.zoomFactor).toInt
-      else math.floor(tilePixels / Const.zoomFactor).toInt)
+    case Zoom(in) =>
+      val newTilePixels =
+        if (in) math.floor(tilePixels * Const.zoomFactor).toInt
+        else math.floor(tilePixels / Const.zoomFactor).toInt
+      val newPlayerOnScreen = State.tileEven(newTilePixels, player.onScreen)
+      this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen))
   }
 }
 
 object State {
-  private def initPlayerOnScreen(tilePixels: Int): (Int, Int) = {
-    def tileEven(coord: Int) = coord - coord % tilePixels
-    (tileEven(Const.screenWidth / 2), tileEven(Const.screenHeight / 2))
-  }
+  def tileEven(tilePixels: Int, coord: (Int, Int)) = (coord._1 - coord._1 % tilePixels, coord._2 - coord._2 % tilePixels)
+
+  private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
+    tileEven(tilePixels, (Const.screenWidth / 2, Const.screenHeight / 2))
 
   def init: State = State(Player((0, 0), (0, 0), initPlayerOnScreen(Const.initTilePixels),
     FaceDirection.Straight), 0, Const.initTilePixels)
