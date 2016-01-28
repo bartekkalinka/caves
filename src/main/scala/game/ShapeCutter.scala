@@ -1,18 +1,28 @@
 package game
 
-case class CutParams(leftTileOffset: (Int, Int), shapeSpan: (Int, Int), rightTileOffset: (Int, Int))
+case class TerrainSliceWithCutParams(terrainSlice: Map[(Int, Int), Shape], upperLeftPixelOffset: (Int, Int), shapeSpan: (Int, Int), rightTileOffset: (Int, Int))
 
 case class ShapeCoord(x: Int, y: Int, fromX: Option[Int], fromY: Option[Int], toX: Option[Int], toY: Option[Int])
 
-object ShapeCutter {
-  private def shapesCoordsWithCutOffsets(cutParams: CutParams): Seq[ShapeCoord] =
-    Seq.tabulate(cutParams.shapeSpan._1 + 1, cutParams.shapeSpan._2 + 1)((x, y) => (x, y)).flatten.map {
+case class ShapeCutter(tilePixels: Int) {
+  def cut(cutParams: TerrainSliceWithCutParams): Shape = {
+    val coords = shapesCoordsWithCutOffsets(cutParams)
+    val shapesMap = cutFromCoords(cutParams.terrainSlice, coords)
+    val shapesTab = mapToTab(shapesMap)
+    joinShapes(shapesTab)
+  }
+
+  private def pixelsToTilesOffset(screenOffs: (Int, Int)): (Int, Int) =
+    (screenOffs._1 / tilePixels, screenOffs._2 / tilePixels)
+
+  private def shapesCoordsWithCutOffsets(cutParams: TerrainSliceWithCutParams): Seq[ShapeCoord] =
+    Seq.tabulate(cutParams.shapeSpan._1, cutParams.shapeSpan._2)((x, y) => (x, y)).flatten.map {
       case (x, y) =>
         ShapeCoord(x, y,
-          if(x == 0) Some(cutParams.leftTileOffset._1) else None,
-          if(y == 0) Some(cutParams.leftTileOffset._2) else None,
-          if(x == cutParams.shapeSpan._1) Some(cutParams.rightTileOffset._1) else None,
-          if(y == cutParams.shapeSpan._2) Some(cutParams.rightTileOffset._2) else None)
+          if(x == 0) Some(pixelsToTilesOffset(cutParams.upperLeftPixelOffset)._1) else None,
+          if(y == 0) Some(pixelsToTilesOffset(cutParams.upperLeftPixelOffset)._2) else None,
+          if(x == cutParams.shapeSpan._1 - 1) Some(cutParams.rightTileOffset._1) else None,
+          if(y == cutParams.shapeSpan._2 - 1) Some(cutParams.rightTileOffset._2) else None)
     }
 
   private def cutFromCoords(terrain: Map[(Int, Int), Shape], coords: Seq[ShapeCoord]): Map[(Int, Int), Shape] =
@@ -52,13 +62,6 @@ object ShapeCutter {
     Shape(
       tabOfShapes.map(rehash(_).map(joinRow)).reduce(_ ++ _)
     )
-
-  def cut(terrain: Map[(Int, Int), Shape], cutParams: CutParams): Shape = {
-    val coords = shapesCoordsWithCutOffsets(cutParams)
-    val shapesMap = cutFromCoords(terrain, coords)
-    val shapesTab = mapToTab(shapesMap)
-    joinShapes(shapesTab)
-  }
 }
 
 
