@@ -20,11 +20,15 @@ object Terrain {
     shape(shapePixelOffset._1)(shapePixelOffset._2)
   }
 
-  def getTerrainFromGenerator(shapeCoord: (Int, Int), shapeSpan: (Int, Int)): Map[(Int, Int), Shape] = {
+  def getSliceFromGenerator(upperLeftPixelCoord: (Int, Int), lowerRightPixelCoord: (Int, Int), tilePixels: Int): Map[(Int, Int), Shape] = {
+    val pixPerShape = Terrain.pixelsPerShape(tilePixels)
+    val (upperLeftShapeCoord, _) = shapeCoordAndOffset(upperLeftPixelCoord, tilePixels)
+    val (lowerRightShapeCoord, _) = shapeCoordAndOffset(lowerRightPixelCoord, tilePixels)
+    val shapeSpan = (lowerRightShapeCoord._1 - upperLeftShapeCoord._1 + 1, lowerRightShapeCoord._2 - upperLeftShapeCoord._2 + 1)
     val terrainMatrix = Seq.tabulate(shapeSpan._1 + 1, shapeSpan._2 + 1)((x, y) => (x, y)).flatten
-    val terrainCoords = shapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
+    val terrainCoords = upperLeftShapeCoord match { case (dx, dy) => terrainMatrix.map { case (x, y) => (x + dx, y + dy)} }
     terrainCoords.map { case (dx, dy) =>
-      ((dx - shapeCoord._1, dy - shapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
+      ((dx - upperLeftShapeCoord._1, dy - upperLeftShapeCoord._2), Shape(ShapeGenWrapper.get(dx, dy))) }.toMap
   }
 }
 
