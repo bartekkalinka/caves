@@ -1,10 +1,11 @@
 package game
 
 case class Terrain(tilePixels: Int) {
-  def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = {
+  def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {
     val (shapeCoord, shapePixelOffset) = shapeCoordAndOffset(mapPixelCoord)
-    val shape = ShapeGenWrapper.get(shapeCoord._1, shapeCoord._1)
-    shape(shapePixelOffset._1)(shapePixelOffset._2)
+    val shape = ShapeGenWrapper.get(shapeCoord._1, shapeCoord._2)
+    val shapeTilesOffset = Screen.pixelsToTilesOffset(shapePixelOffset, tilePixels)
+    shape(shapeTilesOffset._1)(shapeTilesOffset._2)
   }
 
   def getSliceWithCutParams(upperLeftPixelCoord: (Int, Int), lowerRightPixelCoord: (Int, Int)): TerrainSliceWithCutParams = {

@@ -22,9 +22,15 @@ case class Zoom(in: Boolean) extends StateMod
 case class SetPlayerCoord(onMap: (Int, Int), onScreen: (Int, Int)) extends StateMod
 
 object Step {
-  private def stateDrivenMod(state: State): StateMod = {
-    SetPlayerCoord(movePlayerOnMap(state.player),
-      movePlayerOnScreenIfStaysInTheMiddle(state.player))
+  private def stateDrivenMod(state: State): Option[StateMod] = {
+    val possiblePositionOnMap = movePlayerOnMap(state.player)
+    if(!Terrain(state.tilePixels).isTileSet(possiblePositionOnMap)) {
+      Some(SetPlayerCoord(possiblePositionOnMap,
+        movePlayerOnScreenIfStaysInTheMiddle(state.player)))
+    }
+    else {
+      None
+    }
   }
 
   private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
@@ -59,7 +65,7 @@ object Step {
 
   def step(data: StepData): Seq[StateMod] = {
     val moveStep = moveStepInPixels(data.state.tilePixels)
-    List(stateDrivenMod(data.state)) ++ inputDrivenModOpt(moveStep, data.input).toList
+    stateDrivenMod(data.state).toList ++ inputDrivenModOpt(moveStep, data.input).toList
   } 
 }
 

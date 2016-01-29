@@ -12,15 +12,12 @@ case class ShapeCutter(tilePixels: Int) {
     joinShapes(shapesTab)
   }
 
-  private def pixelsToTilesOffset(screenOffs: (Int, Int)): (Int, Int) =
-    (screenOffs._1 / tilePixels, screenOffs._2 / tilePixels)
-
   private def shapesCoordsWithCutOffsets(cutParams: TerrainSliceWithCutParams): Seq[ShapeCoord] =
     Seq.tabulate(cutParams.shapeSpan._1, cutParams.shapeSpan._2)((x, y) => (x, y)).flatten.map {
       case (x, y) =>
         ShapeCoord(x, y,
-          if(x == 0) Some(pixelsToTilesOffset(cutParams.upperLeftPixelOffset)._1) else None,
-          if(y == 0) Some(pixelsToTilesOffset(cutParams.upperLeftPixelOffset)._2) else None,
+          if(x == 0) Some(Screen.pixelsToTilesOffset(cutParams.upperLeftPixelOffset, tilePixels)._1) else None,
+          if(y == 0) Some(Screen.pixelsToTilesOffset(cutParams.upperLeftPixelOffset, tilePixels)._2) else None,
           if(x == cutParams.shapeSpan._1 - 1) Some(cutParams.rightTileOffset._1) else None,
           if(y == cutParams.shapeSpan._2 - 1) Some(cutParams.rightTileOffset._2) else None)
     }

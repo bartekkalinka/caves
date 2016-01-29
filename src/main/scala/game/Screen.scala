@@ -4,6 +4,9 @@ object Screen {
   private def playerToLeftCorner(player: Player): (Int, Int) =
     (player.onMap._1 - player.onScreen._1, player.onMap._2 - player.onScreen._2)
 
+  def pixelsToTilesOffset(screenOffs: (Int, Int), tilePixels: Int): (Int, Int) =
+    (screenOffs._1 / tilePixels, screenOffs._2 / tilePixels)
+
   def calculate(player: Player, tilePixels: Int): Shape = {
     val upperLeftCornerCoord = playerToLeftCorner(player)
     val lowerRightCornerCoord = (upperLeftCornerCoord._1 + Const.screenWidth, upperLeftCornerCoord._2 + Const.screenHeight)
