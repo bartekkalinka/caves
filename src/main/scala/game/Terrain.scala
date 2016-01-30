@@ -18,14 +18,11 @@ case class Terrain(tilePixels: Int) {
 
   private def pixelsPerShape = tilePixels * Const.tilesPerShape
 
-  private def absModulo(a: Int, b: Int) = if(a < 0) b + a % b else a % b
-
-  private def fluentDiv(a: Int, b: Int) = if(a < 0) a / b - 1 else a / b
-
   private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): ((Int, Int), (Int, Int)) = {
     val pixPerShape = pixelsPerShape
-    val shapeCoord = (fluentDiv(mapPixelCoord._1, pixPerShape), fluentDiv(mapPixelCoord._2, pixPerShape))
-    val shapePixelOffset = (absModulo(mapPixelCoord._1, pixPerShape), absModulo(mapPixelCoord._2, pixPerShape))
+    val shapeCoord = (Screen.fluentDiv(mapPixelCoord._1, pixPerShape),
+      Screen.fluentDiv(mapPixelCoord._2, pixPerShape))
+    val shapePixelOffset = (Screen.absModulo(mapPixelCoord._1, pixPerShape), Screen.absModulo(mapPixelCoord._2, pixPerShape))
     (shapeCoord, shapePixelOffset)
   }
 
