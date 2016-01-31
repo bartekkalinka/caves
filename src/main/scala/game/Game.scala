@@ -103,8 +103,19 @@ object State {
   private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
     tileEven(tilePixels, (Const.screenWidth / 2, Const.screenHeight / 2))
 
-  def init: State = State(Player((0, 0), (0, 0), initPlayerOnScreen(Const.initTilePixels),
-    FaceDirection.Straight), 0, Const.initTilePixels)
+  private def initPlayerOnMap(tilePixels: Int): (Int, Int) =
+    Stream.from(0).find(x => !Terrain(tilePixels).isTileSet((x, 0))).map((_, 0)).getOrElse((0, 0))
+
+  def init: State = State(
+    player = Player(
+      onMap = initPlayerOnMap(Const.initTilePixels),
+      vector = (0, 0),
+      onScreen = initPlayerOnScreen(Const.initTilePixels),
+      faceDirection = FaceDirection.Straight
+    ),
+    score = 0,
+    tilePixels = Const.initTilePixels
+  )
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(state, input)
