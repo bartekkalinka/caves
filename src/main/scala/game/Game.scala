@@ -1,6 +1,20 @@
 package game
 
-case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection)
+case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection) {
+  private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
+    (coord._1 + vector._1, coord._2 + vector._2)
+
+  def movePlayerOnMap: Player = copy(onMap = applyVector(onMap, vector))
+
+  def movePlayerOnScreen: Player =
+    copy(onScreen = applyVector(onScreen, vector))
+
+  def isAtCollision(tilePixels: Int): Boolean = {
+    val terrain = Terrain(tilePixels)
+    terrain.isTileSet(onMap) || terrain.isTileSet((onMap._1, onMap._2 + tilePixels))
+  }
+
+}
 case class Shape(tiles: Array[Array[Boolean]])
 case class PackedShape(tiles: Array[String])
 
@@ -23,9 +37,9 @@ case class SetPlayerCoord(onMap: (Int, Int), onScreen: (Int, Int)) extends State
 
 object Step {
   private def stateDrivenMod(state: State): Option[StateMod] = {
-    val possiblePositionOnMap = movePlayerOnMap(state.player)
-    if(!Terrain(state.tilePixels).isTileSet(possiblePositionOnMap)) {
-      Some(SetPlayerCoord(possiblePositionOnMap,
+    val possiblePosition = state.player.movePlayerOnMap
+    if(!possiblePosition.isAtCollision(state.tilePixels)) {
+      Some(SetPlayerCoord(possiblePosition.onMap,
         movePlayerOnScreenIfStaysInTheMiddle(state.player)))
     }
     else {
@@ -33,21 +47,12 @@ object Step {
     }
   }
 
-  private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
-    (coord._1 + vector._1, coord._2 + vector._2)
-
-  private def movePlayerOnMap(player: Player): (Int, Int) =
-    applyVector(player.onMap, player.vector)
-
-  private def movePlayerOnScreen(player: Player): (Int, Int) =
-    applyVector(player.onScreen, player.vector)
-
   private def isInTheMiddleOfScreen(coord: (Int, Int)): Boolean =
     math.abs(coord._1 - Const.screenWidth / 2) < Const.screenWidth / 4 &&
     math.abs(coord._2 - Const.screenHeight / 2) < Const.screenHeight / 4
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
-    val newPos = movePlayerOnScreen(player)
+    val newPos = player.movePlayerOnScreen.onScreen
     if(isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
