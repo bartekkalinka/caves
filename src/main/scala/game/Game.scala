@@ -4,22 +4,25 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
   private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
     (coord._1 + vector._1, coord._2 + vector._2)
 
-  def movePlayerOnMap: Player = copy(onMap = applyVector(onMap, vector))
+  def movePlayerOnMapMod: SetPlayerCoord = SetPlayerCoord(applyVector(onMap, vector), onScreen)
 
-  def movePlayerOnScreen: Player =
-    copy(onScreen = applyVector(onScreen, vector))
+  def movePlayerOnScreen: SetPlayerCoord = SetPlayerCoord(onMap, applyVector(onScreen, vector))
 
   def isAtCollision(tilePixels: Int): Boolean = {
     val terrain = Terrain(tilePixels)
     terrain.isTileSet(onMap) || terrain.isTileSet((onMap._1, onMap._2 + tilePixels))
   }
 
+  def applyPlayerMod(mod: PlayerMod): Player = mod match {
+    case SetPlayerCoord(newOnMap, newOnScreen) =>
+      copy(onMap = newOnMap, onScreen = newOnScreen)
+    case SetPlayerVector(newVector, newFaceDir) =>
+      copy(vector = newVector, faceDirection = newFaceDir)
+  }
 }
+
 case class Shape(tiles: Array[Array[Boolean]])
 case class PackedShape(tiles: Array[String])
-
-case object Tick
-case class Delay(counter: Int)
 case class UserInput(dir: String)
 case class StepData(state: State, input: Option[UserInput])
 
@@ -31,29 +34,28 @@ object FaceDirection {
 }
 
 sealed trait StateMod
-case class SetPlayerVector(mod: (Int, Int), faceDirection: FaceDirection = FaceDirection.Straight) extends StateMod
 case class Zoom(in: Boolean) extends StateMod
-case class SetPlayerCoord(onMap: (Int, Int), onScreen: (Int, Int)) extends StateMod
+sealed trait PlayerMod extends StateMod
+case class SetPlayerVector(mod: (Int, Int), faceDirection: FaceDirection = FaceDirection.Straight) extends PlayerMod
+case class SetPlayerCoord(onMap: (Int, Int), onScreen: (Int, Int)) extends PlayerMod {
+  def mergeWithScreenMod(screenMod: SetPlayerCoord): SetPlayerCoord = SetPlayerCoord(onMap = this.onMap, onScreen = screenMod.onScreen)
+}
 
 object Step {
   private def stateDrivenMod(state: State): Option[StateMod] = {
-    val possiblePosition = state.player.movePlayerOnMap
-    if(!possiblePosition.isAtCollision(state.tilePixels)) {
-      Some(SetPlayerCoord(possiblePosition.onMap,
-        movePlayerOnScreenIfStaysInTheMiddle(state.player)))
+    val possibleMod = state.player.movePlayerOnMapMod
+    if(!state.player.applyPlayerMod(possibleMod).isAtCollision(state.tilePixels)) {
+      Some(possibleMod.mergeWithScreenMod(SetPlayerCoord((0, 0),
+        movePlayerOnScreenIfStaysInTheMiddle(state.player))))
     }
     else {
       None
     }
   }
 
-  private def isInTheMiddleOfScreen(coord: (Int, Int)): Boolean =
-    math.abs(coord._1 - Const.screenWidth / 2) < Const.screenWidth / 4 &&
-    math.abs(coord._2 - Const.screenHeight / 2) < Const.screenHeight / 4
-
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
     val newPos = player.movePlayerOnScreen.onScreen
-    if(isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
+    if(Screen.isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
   private def moveStepInPixels(tilePixels: Int) = Const.moveStepInTiles * tilePixels
@@ -89,10 +91,7 @@ object Const {
 case class State(player: Player, score: Int, tilePixels: Int)
 {
   def applyMod(mod: StateMod): State = mod match {
-    case SetPlayerCoord(onMap, onScreen) =>
-      this.copy(player = player.copy(onMap = onMap, onScreen = onScreen))
-    case SetPlayerVector(newVector, faceDir) =>
-      this.copy(player = player.copy(vector = newVector, faceDirection = faceDir))
+    case playerMod: PlayerMod => this.copy(player = player.applyPlayerMod(playerMod))
     case Zoom(in) =>
       val newTilePixels =
         if (in) math.floor(tilePixels * Const.zoomFactor).toInt
