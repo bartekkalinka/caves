@@ -1,4 +1,7 @@
-package game
+package game.calculations
+
+import game.Const
+import game.state.{Shape, Player}
 
 object Screen {
   private def playerToLeftCorner(player: Player): (Int, Int) =

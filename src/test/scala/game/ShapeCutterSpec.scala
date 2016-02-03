@@ -1,5 +1,7 @@
 package game
 
+import game.calculations.{TerrainSliceWithCutParams, ShapeCutter}
+import game.state.Shape
 import org.scalatest._
 
 class ShapeCutterSpec extends FlatSpec with Matchers {

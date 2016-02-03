@@ -1,4 +1,7 @@
-package game
+package game.calculations
+
+import game._
+import game.state.Shape
 
 case class Terrain(tilePixels: Int) {
   def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {

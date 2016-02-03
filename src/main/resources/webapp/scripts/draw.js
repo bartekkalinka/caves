@@ -64,11 +64,11 @@ define( ['scripts/globals'], function (glob) {
 
     function drawPlayer(x, y, faceDirection) {
       var playerImage;
-      if(faceDirection == "game.FaceDirection.Straight")
+      if(faceDirection == "game.state.FaceDirection.Straight")
         playerImage = playerFrontImage;
-      else if(faceDirection == "game.FaceDirection.Left")
+      else if(faceDirection == "game.state.FaceDirection.Left")
         playerImage = playerLeftImage;
-      else if(faceDirection == "game.FaceDirection.Right")
+      else if(faceDirection == "game.state.FaceDirection.Right")
         playerImage = playerRightImage;
       ctx.drawImage(playerImage, x, y, glob.tilePixels, glob.tilePixels * 2);
     }

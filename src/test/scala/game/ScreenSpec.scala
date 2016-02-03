@@ -1,5 +1,6 @@
 package game
 
+import game.calculations.Screen
 import org.scalatest._
 
 class ScreenSpec extends FlatSpec with Matchers {

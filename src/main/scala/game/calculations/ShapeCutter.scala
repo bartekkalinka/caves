@@ -1,4 +1,6 @@
-package game
+package game.calculations
+
+import game.state.Shape
 
 case class TerrainSliceWithCutParams(terrainSlice: Map[(Int, Int), Shape], upperLeftPixelOffset: (Int, Int), shapeSpan: (Int, Int), rightTileOffset: (Int, Int))
 
