@@ -36,8 +36,6 @@ object Step {
     if(Screen.isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
-  private def moveStepInPixels(tilePixels: Int) = Const.moveStepInTiles * tilePixels
-
   private def inputDrivenModOpt(moveStepInPixels: Int, input: Option[UserInput]): Option[StateMod] = input.collect  {
     case UserInput("rightKeyDown") => SetPlayerVector((moveStepInPixels, 0), FaceDirection.Right)
     case UserInput("upKeyDown") => SetPlayerVector((0, -moveStepInPixels))
@@ -49,7 +47,6 @@ object Step {
   }
 
   def step(data: StepData): Seq[StateMod] = {
-    val moveStep = moveStepInPixels(data.state.tilePixels)
-    stateDrivenMod(data.state) ++ inputDrivenModOpt(moveStep, data.input).toList
+    stateDrivenMod(data.state) ++ inputDrivenModOpt(Const.moveStepInPixels, data.input).toList
   }
 }
