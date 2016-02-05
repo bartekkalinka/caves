@@ -2,7 +2,7 @@ package game.calculations
 
 import game.state.Shape
 
-case class TerrainSliceWithCutParams(terrainSlice: Map[(Int, Int), Shape], upperLeftPixelOffset: (Int, Int), shapeSpan: (Int, Int), rightTileOffset: (Int, Int))
+case class TerrainSliceWithCutParams(terrainSlice: Map[(Int, Int), Shape], upperLeftPixelOffset: (Int, Int), shapeSpan: (Int, Int), lowerRightPixelOffset: (Int, Int))
 
 case class ShapeCoord(x: Int, y: Int, fromX: Option[Int], fromY: Option[Int], toX: Option[Int], toY: Option[Int])
 
@@ -20,8 +20,8 @@ case class ShapeCutter(tilePixels: Int) {
         ShapeCoord(x, y,
           if(x == 0) Some(Screen.pixelsToTilesOffset(cutParams.upperLeftPixelOffset, tilePixels)._1) else None,
           if(y == 0) Some(Screen.pixelsToTilesOffset(cutParams.upperLeftPixelOffset, tilePixels)._2) else None,
-          if(x == cutParams.shapeSpan._1 - 1) Some(cutParams.rightTileOffset._1) else None,
-          if(y == cutParams.shapeSpan._2 - 1) Some(cutParams.rightTileOffset._2) else None)
+          if(x == cutParams.shapeSpan._1 - 1) Some(Screen.pixelsToTilesOffset(cutParams.lowerRightPixelOffset, tilePixels)._1) else None,
+          if(y == cutParams.shapeSpan._2 - 1) Some(Screen.pixelsToTilesOffset(cutParams.lowerRightPixelOffset, tilePixels)._2) else None)
     }
 
   private def cutFromCoords(terrain: Map[(Int, Int), Shape], coords: Seq[ShapeCoord]): Map[(Int, Int), Shape] =
