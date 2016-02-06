@@ -7,8 +7,8 @@ case class Terrain(tilePixels: Int) {
   def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {
     val CoordAndOffset(shapeCoord, shapePixelOffset) = shapeCoordAndOffset(mapPixelCoord)
     val shape = ShapeGenWrapper.get(shapeCoord._1, shapeCoord._2)
-    val shapeTilesOffset = ScreenCommon.pixelsToTilesOffset(shapePixelOffset, tilePixels)
-    shape(shapeTilesOffset._1)(shapeTilesOffset._2)
+    val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon.tileCoordAndOffset(shapePixelOffset, tilePixels)
+    shape(shapeTilesCoord._1)(shapeTilesCoord._2)
   }
 
   def getSliceWithCutParams(upperLeftPixelCoord: (Int, Int), lowerRightPixelCoord: (Int, Int)): TerrainSliceWithCutParams = {
@@ -19,6 +19,7 @@ case class Terrain(tilePixels: Int) {
     TerrainSliceWithCutParams(terrainSlice, upperLeftPixelOffset, shapeSpan, lowerRightPixelOffset)
   }
 
+  //TODO move to ScreenCommon, after taking care of tilepixels
   private def pixelsPerShape = tilePixels * Const.tilesPerShape
 
   private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): CoordAndOffset =

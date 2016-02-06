@@ -18,10 +18,10 @@ case class ShapeCutter(tilePixels: Int) {
     Seq.tabulate(cutParams.shapeSpan._1, cutParams.shapeSpan._2)((x, y) => (x, y)).flatten.map {
       case (x, y) =>
         ShapeCoord(x, y,
-          if(x == 0) Some(ScreenCommon.pixelsToTilesOffset(cutParams.upperLeftPixelOffset, tilePixels)._1) else None,
-          if(y == 0) Some(ScreenCommon.pixelsToTilesOffset(cutParams.upperLeftPixelOffset, tilePixels)._2) else None,
-          if(x == cutParams.shapeSpan._1 - 1) Some(ScreenCommon.pixelsToTilesOffset(cutParams.lowerRightPixelOffset, tilePixels)._1) else None,
-          if(y == cutParams.shapeSpan._2 - 1) Some(ScreenCommon.pixelsToTilesOffset(cutParams.lowerRightPixelOffset, tilePixels)._2) else None)
+          if(x == 0) Some(ScreenCommon.tileCoordAndOffset(cutParams.upperLeftPixelOffset, tilePixels).coord._1) else None,
+          if(y == 0) Some(ScreenCommon.tileCoordAndOffset(cutParams.upperLeftPixelOffset, tilePixels).coord._2) else None,
+          if(x == cutParams.shapeSpan._1 - 1) Some(ScreenCommon.tileCoordAndOffset(cutParams.lowerRightPixelOffset, tilePixels).coord._1) else None,
+          if(y == cutParams.shapeSpan._2 - 1) Some(ScreenCommon.tileCoordAndOffset(cutParams.lowerRightPixelOffset, tilePixels).coord._2) else None)
     }
 
   private def cutFromCoords(terrain: Map[(Int, Int), Shape], coords: Seq[ShapeCoord]): Map[(Int, Int), Shape] =

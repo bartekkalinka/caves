@@ -7,16 +7,12 @@ object ScreenCommon {
 
   def absModulo(a: Int, b: Int) = if(a < 0) (b + a % b) % b else a % b
 
-  def pixelsToTilesOffset(screenOffs: (Int, Int), tilePixels: Int): (Int, Int) =
-    (fluentDiv(screenOffs._1, tilePixels), fluentDiv(screenOffs._2, tilePixels))
+  def tileCoordAndOffset(screenOffs: (Int, Int), tilePixels: Int): CoordAndOffset =
+    unitCoordAndOffset(screenOffs, tilePixels)
 
   def unitCoordAndOffset(pixelCoord: (Int, Int), pixelsPerUnit: Int): CoordAndOffset = {
-    val unitCoord = (ScreenCommon.fluentDiv(pixelCoord._1, pixelsPerUnit),
-      ScreenCommon.fluentDiv(pixelCoord._2, pixelsPerUnit))
-    val unitPixelOffset = (
-      ScreenCommon.absModulo(pixelCoord._1, pixelsPerUnit),
-      ScreenCommon.absModulo(pixelCoord._2, pixelsPerUnit)
-    )
+    val unitCoord = (fluentDiv(pixelCoord._1, pixelsPerUnit), fluentDiv(pixelCoord._2, pixelsPerUnit))
+    val unitPixelOffset = (absModulo(pixelCoord._1, pixelsPerUnit), absModulo(pixelCoord._2, pixelsPerUnit))
     CoordAndOffset(unitCoord, unitPixelOffset)
   }
 }
