@@ -21,13 +21,8 @@ case class Terrain(tilePixels: Int) {
 
   private def pixelsPerShape = tilePixels * Const.tilesPerShape
 
-  private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): ((Int, Int), (Int, Int)) = {
-    val pixPerShape = pixelsPerShape
-    val shapeCoord = (ScreenCommon.fluentDiv(mapPixelCoord._1, pixPerShape),
-      ScreenCommon.fluentDiv(mapPixelCoord._2, pixPerShape))
-    val shapePixelOffset = (ScreenCommon.absModulo(mapPixelCoord._1, pixPerShape), ScreenCommon.absModulo(mapPixelCoord._2, pixPerShape))
-    (shapeCoord, shapePixelOffset)
-  }
+  private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): ((Int, Int), (Int, Int)) =
+    ScreenCommon.unitCoordAndOffset(mapPixelCoord, pixelsPerShape)
 
   private def getSliceFromGenerator(upperLeftShapeCoord: (Int, Int), shapeSpan: (Int, Int)): Map[(Int, Int), Shape] = {
     val terrainMatrix = Seq.tabulate(shapeSpan._1 + 1, shapeSpan._2 + 1)((x, y) => (x, y)).flatten
