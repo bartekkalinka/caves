@@ -5,15 +5,15 @@ import game.state.Shape
 
 case class Terrain(tilePixels: Int) {
   def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {
-    val (shapeCoord, shapePixelOffset) = shapeCoordAndOffset(mapPixelCoord)
+    val CoordAndOffset(shapeCoord, shapePixelOffset) = shapeCoordAndOffset(mapPixelCoord)
     val shape = ShapeGenWrapper.get(shapeCoord._1, shapeCoord._2)
     val shapeTilesOffset = ScreenCommon.pixelsToTilesOffset(shapePixelOffset, tilePixels)
     shape(shapeTilesOffset._1)(shapeTilesOffset._2)
   }
 
   def getSliceWithCutParams(upperLeftPixelCoord: (Int, Int), lowerRightPixelCoord: (Int, Int)): TerrainSliceWithCutParams = {
-    val (upperLeftShapeCoord, upperLeftPixelOffset) = shapeCoordAndOffset(upperLeftPixelCoord)
-    val (lowerRightShapeCoord, lowerRightPixelOffset) = shapeCoordAndOffset(lowerRightPixelCoord)
+    val CoordAndOffset(upperLeftShapeCoord, upperLeftPixelOffset) = shapeCoordAndOffset(upperLeftPixelCoord)
+    val CoordAndOffset(lowerRightShapeCoord, lowerRightPixelOffset) = shapeCoordAndOffset(lowerRightPixelCoord)
     val shapeSpan = (lowerRightShapeCoord._1 - upperLeftShapeCoord._1 + 1, lowerRightShapeCoord._2 - upperLeftShapeCoord._2 + 1)
     val terrainSlice = getSliceFromGenerator(upperLeftShapeCoord, shapeSpan)
     TerrainSliceWithCutParams(terrainSlice, upperLeftPixelOffset, shapeSpan, lowerRightPixelOffset)
@@ -21,7 +21,7 @@ case class Terrain(tilePixels: Int) {
 
   private def pixelsPerShape = tilePixels * Const.tilesPerShape
 
-  private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): ((Int, Int), (Int, Int)) =
+  private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): CoordAndOffset =
     ScreenCommon.unitCoordAndOffset(mapPixelCoord, pixelsPerShape)
 
   private def getSliceFromGenerator(upperLeftShapeCoord: (Int, Int), shapeSpan: (Int, Int)): Map[(Int, Int), Shape] = {
