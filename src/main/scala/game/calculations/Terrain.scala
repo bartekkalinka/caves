@@ -7,7 +7,7 @@ case class Terrain(tilePixels: Int) {
   def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {
     val (shapeCoord, shapePixelOffset) = shapeCoordAndOffset(mapPixelCoord)
     val shape = ShapeGenWrapper.get(shapeCoord._1, shapeCoord._2)
-    val shapeTilesOffset = Screen.pixelsToTilesOffset(shapePixelOffset, tilePixels)
+    val shapeTilesOffset = ScreenCommon.pixelsToTilesOffset(shapePixelOffset, tilePixels)
     shape(shapeTilesOffset._1)(shapeTilesOffset._2)
   }
 
@@ -23,9 +23,9 @@ case class Terrain(tilePixels: Int) {
 
   private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): ((Int, Int), (Int, Int)) = {
     val pixPerShape = pixelsPerShape
-    val shapeCoord = (Screen.fluentDiv(mapPixelCoord._1, pixPerShape),
-      Screen.fluentDiv(mapPixelCoord._2, pixPerShape))
-    val shapePixelOffset = (Screen.absModulo(mapPixelCoord._1, pixPerShape), Screen.absModulo(mapPixelCoord._2, pixPerShape))
+    val shapeCoord = (ScreenCommon.fluentDiv(mapPixelCoord._1, pixPerShape),
+      ScreenCommon.fluentDiv(mapPixelCoord._2, pixPerShape))
+    val shapePixelOffset = (ScreenCommon.absModulo(mapPixelCoord._1, pixPerShape), ScreenCommon.absModulo(mapPixelCoord._2, pixPerShape))
     (shapeCoord, shapePixelOffset)
   }
 
