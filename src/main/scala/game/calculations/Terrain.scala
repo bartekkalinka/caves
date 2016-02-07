@@ -5,25 +5,19 @@ import game.state.Shape
 
 case class Terrain(tilePixels: Int) {
   def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {
-    val CoordAndOffset(shapeCoord, shapePixelOffset) = shapeCoordAndOffset(mapPixelCoord)
+    val CoordAndOffset(shapeCoord, shapePixelOffset) = ScreenCommon(tilePixels).shapeCoordAndOffset(mapPixelCoord)
     val shape = ShapeGenWrapper.get(shapeCoord._1, shapeCoord._2)
-    val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon.tileCoordAndOffset(shapePixelOffset, tilePixels)
+    val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(shapePixelOffset)
     shape(shapeTilesCoord._1)(shapeTilesCoord._2)
   }
 
   def getSliceWithCutParams(upperLeftPixelCoord: (Int, Int), lowerRightPixelCoord: (Int, Int)): TerrainSliceWithCutParams = {
-    val CoordAndOffset(upperLeftShapeCoord, upperLeftPixelOffset) = shapeCoordAndOffset(upperLeftPixelCoord)
-    val CoordAndOffset(lowerRightShapeCoord, lowerRightPixelOffset) = shapeCoordAndOffset(lowerRightPixelCoord)
+    val CoordAndOffset(upperLeftShapeCoord, upperLeftPixelOffset) = ScreenCommon(tilePixels).shapeCoordAndOffset(upperLeftPixelCoord)
+    val CoordAndOffset(lowerRightShapeCoord, lowerRightPixelOffset) = ScreenCommon(tilePixels).shapeCoordAndOffset(lowerRightPixelCoord)
     val shapeSpan = (lowerRightShapeCoord._1 - upperLeftShapeCoord._1 + 1, lowerRightShapeCoord._2 - upperLeftShapeCoord._2 + 1)
     val terrainSlice = getSliceFromGenerator(upperLeftShapeCoord, shapeSpan)
     TerrainSliceWithCutParams(terrainSlice, upperLeftPixelOffset, shapeSpan, lowerRightPixelOffset)
   }
-
-  //TODO move to ScreenCommon, after taking care of tilepixels
-  private def pixelsPerShape = tilePixels * Const.tilesPerShape
-
-  private def shapeCoordAndOffset(mapPixelCoord: (Int, Int)): CoordAndOffset =
-    ScreenCommon.unitCoordAndOffset(mapPixelCoord, pixelsPerShape)
 
   private def getSliceFromGenerator(upperLeftShapeCoord: (Int, Int), shapeSpan: (Int, Int)): Map[(Int, Int), Shape] = {
     val terrainMatrix = Seq.tabulate(shapeSpan._1 + 1, shapeSpan._2 + 1)((x, y) => (x, y)).flatten
