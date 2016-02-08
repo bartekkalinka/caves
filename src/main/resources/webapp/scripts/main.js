@@ -39,7 +39,7 @@ function onMessage(evt) {
    var obj = JSON.parse(evt.data);
    glob.tilePixels = obj.tilePixels;
    draw.clearCanvas();
-   draw.drawShape(obj.shape.tiles);
+   draw.drawShape(obj.shape.tiles, obj.offset);
    draw.drawPlayer(obj.player.x, obj.player.y, obj.faceDirection[0]);
 }
 function onError(evt) {

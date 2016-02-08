@@ -1,7 +1,7 @@
 package game.calculations
 
 import game.Const
-import game.state.{Shape, Player}
+import game.state.{ShapeWithOffset, Shape, Player}
 
 object Screen {
   private def playerToLeftCorner(player: Player): (Int, Int) =
@@ -11,10 +11,14 @@ object Screen {
     math.abs(coord._1 - Const.screenWidth / 2) < Const.screenWidth / 4 &&
       math.abs(coord._2 - Const.screenHeight / 2) < Const.screenHeight / 4
 
-  def calculate(player: Player, tilePixels: Int): Shape = {
+  private def shapeWithOffset(shape: Shape, cutParams: TerrainSliceWithCutParams, tilePixels: Int): ShapeWithOffset =
+    ShapeWithOffset(shape, ScreenCommon(tilePixels).tileCoordAndOffset(cutParams.upperLeftPixelOffset).offset)
+
+  def calculate(player: Player, tilePixels: Int): ShapeWithOffset = {
     val upperLeftCornerCoord = playerToLeftCorner(player)
     val lowerRightCornerCoord = (upperLeftCornerCoord._1 + Const.screenWidth, upperLeftCornerCoord._2 + Const.screenHeight)
     val cutParams = Terrain(tilePixels).getSliceWithCutParams(upperLeftCornerCoord, lowerRightCornerCoord)
-    ShapeCutter(tilePixels).cut(cutParams)
+    val shape = ShapeCutter(tilePixels).cut(cutParams)
+    shapeWithOffset(shape, cutParams, tilePixels)
   }
 }
