@@ -21,13 +21,9 @@ case class SetPlayerMapCoord(onMap: (Int, Int)) extends PlayerMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends PlayerMod
 
 object Step {
-  //TODO refactor - divide method
   private def stateDrivenMod(state: State): List[StateMod] = {
     val collision = state.player.isAtCollisionVector(state.tilePixels)
-    val playerWithRightVector = collision match {
-      case Some(impactVector) => state.player.copy(vector = impactVector)
-      case None => state.player
-    }
+    val playerWithRightVector = state.player.copy(vector = collision.getOrElse(state.player.vector))
     List(playerWithRightVector.movePlayerOnMapMod, SetPlayerScreenCoord(movePlayerOnScreenIfStaysInTheMiddle(playerWithRightVector)))
   }
 
