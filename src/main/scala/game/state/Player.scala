@@ -12,7 +12,8 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
 
   def isAtCollision(tilePixels: Int): Boolean = {
     val terrain = Terrain(tilePixels)
-    terrain.isTileSet(onMap) || terrain.isTileSet((onMap._1, onMap._2 + tilePixels))
+    val playerFigureCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
+    playerFigureCorners.map { case (x, y) => terrain.isTileSet((onMap._1 + x * tilePixels, onMap._2 + y * tilePixels)) }.reduce(_ || _)
   }
 
   def applyPlayerMod(mod: PlayerMod): Player = mod match {
