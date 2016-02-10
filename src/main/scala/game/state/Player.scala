@@ -1,20 +1,19 @@
 package game.state
 
-import game.calculations.{CollisionDetection, Terrain}
+import game.calculations.{ScreenCommon, CollisionDetection, Terrain}
 
 case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection) {
   val playerFigureLogicalCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
 
-  private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
-    (coord._1 + vector._1, coord._2 + vector._2)
+  def movePlayerOnMapMod: SetPlayerMapCoord = SetPlayerMapCoord(ScreenCommon.applyVector(onMap, vector))
 
-  def movePlayerOnMapMod: SetPlayerMapCoord = SetPlayerMapCoord(applyVector(onMap, vector))
+  def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(ScreenCommon.applyVector(onScreen, vector))
 
-  def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(applyVector(onScreen, vector))
-
-  def isAtCollision(tilePixels: Int): Boolean = {
+  //TODO possible refactoring?
+  def isAtCollisionVector(tilePixels: Int): Option[(Int, Int)] = {
     val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
-    CollisionDetection(tilePixels).setOfPointsIsAtCollisionWithTerrain(playerFigureCorners)
+    val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, vector))
+    if(collisionVectors.isEmpty) None else Some(collisionVectors.min)
   }
 
   def applyPlayerMod(mod: PlayerMod): Player = mod match {

@@ -4,6 +4,11 @@ import game.Const
 
 case class CoordAndOffset(coord: (Int, Int), offset: (Int, Int))
 
+object ScreenCommon {
+  def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
+    (coord._1 + vector._1, coord._2 + vector._2)
+}
+
 case class ScreenCommon(tilePixels: Int) {
   private def fluentDiv(a: Int, b: Int) = if(a < 0) (a + 1) / b - 1 else a / b
 
