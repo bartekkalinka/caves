@@ -1,9 +1,9 @@
 package game.state
 
-import game.calculations.Terrain
+import game.calculations.{CollisionDetection, Terrain}
 
 case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection) {
-  val playerFigureCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
+  val playerFigureLogicalCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
 
   private def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
     (coord._1 + vector._1, coord._2 + vector._2)
@@ -13,8 +13,8 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
   def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(applyVector(onScreen, vector))
 
   def isAtCollision(tilePixels: Int): Boolean = {
-    val terrain = Terrain(tilePixels)
-    playerFigureCorners.map { case (x, y) => terrain.isTileSet((onMap._1 + x * tilePixels, onMap._2 + y * tilePixels)) }.reduce(_ || _)
+    val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
+    CollisionDetection(tilePixels).setOfPointsIsAtCollisionWithTerrain(playerFigureCorners)
   }
 
   def applyPlayerMod(mod: PlayerMod): Player = mod match {
