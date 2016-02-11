@@ -10,9 +10,9 @@ object ScreenCommon {
 }
 
 case class ScreenCommon(tilePixels: Int) {
-  private def fluentDiv(a: Int, b: Int) = if(a < 0) (a + 1) / b - 1 else a / b
+  def fluentDiv(a: Int, b: Int) = if(a < 0) (a + 1) / b - 1 else a / b
 
-  private def absModulo(a: Int, b: Int) = if(a < 0) (b + a % b) % b else a % b
+  def absModulo(a: Int, b: Int) = if(a < 0) (b + a % b) % b else a % b
 
   private def pixelsPerShape = tilePixels * Const.tilesPerShape
 

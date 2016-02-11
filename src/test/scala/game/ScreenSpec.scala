@@ -1,11 +1,11 @@
 package game
 
-import game.calculations.Screen
+import game.calculations.ScreenCommon
 import org.scalatest._
 
 class ScreenSpec extends FlatSpec with Matchers {
   def test(a: Int, b: Int): (Int, Int) =
-    (Screen.fluentDiv(a, b), Screen.absModulo(a, b))
+    (ScreenCommon(15).fluentDiv(a, b), ScreenCommon(15).absModulo(a, b))
 
   it should "calculate fluentDiv and absModulo correctly" in {
     test(4, 3) should be ((1, 1))
