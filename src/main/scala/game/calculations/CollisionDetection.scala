@@ -1,10 +1,18 @@
 package game.calculations
 
 case class CollisionDetection(tilePixels: Int) {
-  //TODO return shortened vector after impact when colliding
   def detectCollision(pointBeforeMovement: (Int, Int), vectorToMove: (Int, Int)): Option[(Int, Int)] = {
     val pointAfterMovement = ScreenCommon.applyVector(pointBeforeMovement, vectorToMove)
-    if(Terrain(tilePixels).isTileSet(pointAfterMovement)) Some((0, 0)) else None
+    if(!Terrain(tilePixels).isTileSet(pointAfterMovement)) {
+      None
+    }
+    else {
+      val movementLine = bresenhamLineAlgorithm((0, 0), vectorToMove)
+      movementLine.reverse.find { partialVector =>
+        val pointAfterMovement = ScreenCommon.applyVector(pointBeforeMovement, partialVector)
+        !Terrain(tilePixels).isTileSet(pointAfterMovement)
+      }.orElse(Some(0, 0))
+    }
   }
 
   def bresenhamLineAlgorithm(from: (Int, Int), to: (Int, Int)): Seq[(Int, Int)] = {
