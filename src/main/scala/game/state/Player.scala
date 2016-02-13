@@ -21,8 +21,10 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
       copy(onMap = newOnMap)
     case SetPlayerScreenCoord(newOnScreen) =>
       copy(onScreen = newOnScreen)
-    case SetPlayerVector(newVector, newFaceDir) =>
-      copy(vector = newVector, faceDirection = newFaceDir)
+    case SetPlayerHorizontalVector(newVectorX, newFaceDir) =>
+      copy(vector = (newVectorX, vector._2), faceDirection = newFaceDir)
+    case SetPlayerVerticalVector(newVectorY) =>
+      copy(vector = (vector._1, newVectorY))
   }
 }
 

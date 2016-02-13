@@ -16,7 +16,8 @@ object FaceDirection {
 sealed trait StateMod
 case class Zoom(in: Boolean) extends StateMod
 sealed trait PlayerMod extends StateMod
-case class SetPlayerVector(mod: (Int, Int), faceDirection: FaceDirection = FaceDirection.Straight) extends PlayerMod
+case class SetPlayerHorizontalVector(mod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends PlayerMod
+case class SetPlayerVerticalVector(mod: Int) extends PlayerMod
 case class SetPlayerMapCoord(onMap: (Int, Int)) extends PlayerMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends PlayerMod
 
@@ -33,13 +34,16 @@ object Step {
   }
 
   private def inputDrivenModOpt(moveStepInPixels: Int, input: Option[UserInput]): Option[StateMod] = input.collect  {
-    case UserInput("rightKeyDown") => SetPlayerVector((moveStepInPixels, 0), FaceDirection.Right)
-    case UserInput("upKeyDown") => SetPlayerVector((0, -moveStepInPixels))
-    case UserInput("leftKeyDown") => SetPlayerVector((-moveStepInPixels, 0), FaceDirection.Left)
-    case UserInput("downKeyDown") => SetPlayerVector((0, moveStepInPixels))
+    case UserInput("rightKeyDown") => SetPlayerHorizontalVector(moveStepInPixels, FaceDirection.Right)
+    case UserInput("upKeyDown") => SetPlayerVerticalVector(-moveStepInPixels)
+    case UserInput("leftKeyDown") => SetPlayerHorizontalVector(-moveStepInPixels, FaceDirection.Left)
+    case UserInput("downKeyDown") => SetPlayerVerticalVector(moveStepInPixels)
     case UserInput("zoomin") => Zoom(true)
     case UserInput("zoomout") => Zoom(false)
-    case ui: UserInput if ui.dir.endsWith("Up") => SetPlayerVector((0, 0))
+    case UserInput("rightKeyUp") => SetPlayerHorizontalVector(0)
+    case UserInput("upKeyUp") => SetPlayerVerticalVector(0)
+    case UserInput("leftKeyUp") => SetPlayerHorizontalVector(0)
+    case UserInput("downKeyUp") => SetPlayerVerticalVector(0)
   }
 
   def step(data: StepData): Seq[StateMod] = {
