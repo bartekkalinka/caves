@@ -6,7 +6,9 @@ object Const {
   private val baseMultiplier = Math.pow(2, Const.targetNoiseDetail).toInt
   val tilesPerShape = baseTilesPerShape * baseMultiplier
   val initTilePixels = 96 / baseMultiplier
-  val moveStepInPixels = 4
+  val moveStepInPixels = 8
+  val maxFallSpeed = 4
+  val gravityAcceleration = 1
   val zoomFactor = Math.sqrt(1.5)
   val screenWidth = 768
   val screenHeight = 500

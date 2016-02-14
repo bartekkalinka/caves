@@ -23,9 +23,16 @@ case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends PlayerMod
 
 object Step {
   private def stateDrivenMod(state: State): List[StateMod] = {
+    //TODO separation of vector mods from vector appliction
+    //TODO collision should modify player vector
+    val gravityVectorMod = List(SetPlayerVerticalVector(state.player.vector._2 + Const.gravityAcceleration)).filter(_.mod <= Const.maxFallSpeed)
     val collision = state.player.isAtCollisionVector(state.tilePixels)
-    val playerWithRightVector = state.player.copy(vector = collision.getOrElse(state.player.vector))
-    List(playerWithRightVector.movePlayerOnMapMod, SetPlayerScreenCoord(movePlayerOnScreenIfStaysInTheMiddle(playerWithRightVector)))
+    val playerWithCollisionLimitedVector = state.player.copy(vector = collision.getOrElse(state.player.vector))
+    val vectorAndCollisionDetectionAppliedMods = List(
+      playerWithCollisionLimitedVector.movePlayerOnMapMod,
+      SetPlayerScreenCoord(movePlayerOnScreenIfStaysInTheMiddle(playerWithCollisionLimitedVector))
+    )
+    vectorAndCollisionDetectionAppliedMods ++ gravityVectorMod
   }
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
@@ -37,13 +44,10 @@ object Step {
     case UserInput("rightKeyDown") => SetPlayerHorizontalVector(moveStepInPixels, FaceDirection.Right)
     case UserInput("upKeyDown") => SetPlayerVerticalVector(-moveStepInPixels)
     case UserInput("leftKeyDown") => SetPlayerHorizontalVector(-moveStepInPixels, FaceDirection.Left)
-    case UserInput("downKeyDown") => SetPlayerVerticalVector(moveStepInPixels)
     case UserInput("zoomin") => Zoom(true)
     case UserInput("zoomout") => Zoom(false)
     case UserInput("rightKeyUp") => SetPlayerHorizontalVector(0)
-    case UserInput("upKeyUp") => SetPlayerVerticalVector(0)
     case UserInput("leftKeyUp") => SetPlayerHorizontalVector(0)
-    case UserInput("downKeyUp") => SetPlayerVerticalVector(0)
   }
 
   def step(data: StepData): Seq[StateMod] = {
