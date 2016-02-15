@@ -9,11 +9,13 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
 
   def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(ScreenCommon.applyVector(onScreen, vector))
 
-  //TODO possible refactoring?
   def isAtCollisionVector(tilePixels: Int): Option[(Int, Int)] = {
-    val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
-    val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, vector))
-    if(collisionVectors.isEmpty) None else Some(collisionVectors.min)
+    if(vector._1 > 0 || vector._2 > 0) { //TODO refactor
+      val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
+      val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, vector))
+      if (collisionVectors.isEmpty) None else Some(collisionVectors.min)
+    }
+    else None
   }
 
   def applyPlayerMod(mod: PlayerMod): Player = mod match {
@@ -25,6 +27,8 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
       copy(vector = (newVectorX, vector._2), faceDirection = newFaceDir)
     case SetPlayerVerticalVector(newVectorY) =>
       copy(vector = (vector._1, newVectorY))
+    case SetPlayerVectorLimitedByCollision(newVector) =>
+      copy(vector = newVector)
   }
 }
 

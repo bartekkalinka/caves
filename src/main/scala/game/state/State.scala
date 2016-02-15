@@ -14,6 +14,9 @@ case class State(player: Player, score: Int, tilePixels: Int)
       val newPlayerOnScreen = State.tileEven(newTilePixels, player.onScreen)
       this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen))
   }
+
+  def applyModsList(mods: Seq[StateMod]): State =
+    mods.foldLeft(this)((st, mod) => st.applyMod(mod))
 }
 
 object State {
@@ -38,7 +41,9 @@ object State {
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(state, input)
-    Step.step(stepData).foldLeft(state)((st, mod) => st.applyMod(mod))
+    val vectorMods = Step.vectorMods(stepData)
+    val stateAfterVectorMods = vectorMods.collisionMod.map(state.applyMod).getOrElse(state.applyModsList(vectorMods.normalVectorMods))
+    stateAfterVectorMods.applyModsList(Step.coordMods(stateAfterVectorMods))
   }
 }
 
