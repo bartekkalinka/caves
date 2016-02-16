@@ -19,21 +19,17 @@ sealed trait PlayerMod extends StateMod
 sealed trait VectorMod extends PlayerMod
 case class SetPlayerHorizontalVector(mod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends VectorMod
 case class SetPlayerVerticalVector(mod: Int) extends VectorMod
-case class SetPlayerVectorLimitedByCollision(mod: (Int, Int)) extends PlayerMod
+case class SetPlayerVectorLimitedByCollision(mod: (Int, Int)) extends VectorMod
 sealed trait CoordMod extends PlayerMod
 case class SetPlayerMapCoord(onMap: (Int, Int)) extends CoordMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends CoordMod
 
-case class VectorMods(collisionMod: Option[SetPlayerVectorLimitedByCollision], normalVectorMods: Seq[VectorMod]) {
-  def addVectorMods(moreVectorMods: Seq[VectorMod]) = copy(normalVectorMods = this.normalVectorMods ++ moreVectorMods)
-}
-
 object Step {
-  private def stateDrivenVectorMods(state: State): VectorMods = {
+  private def addStateDrivenVectorMods(state: State, inputDrivenModOption: Option[VectorMod]): Seq[VectorMod] = {
     val gravityVectorMod = List(SetPlayerVerticalVector(state.player.vector._2 + Const.gravityAcceleration)).filter(_.mod <= Const.maxFallSpeed)
     val collision = state.player.isAtCollisionVector(state.tilePixels)
     val collisionModOption = collision.map(SetPlayerVectorLimitedByCollision)
-    VectorMods(collisionModOption, gravityVectorMod)
+    collisionModOption.map(List[VectorMod](_)).getOrElse(inputDrivenModOption.toList ++ gravityVectorMod)
   }
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
@@ -50,8 +46,8 @@ object Step {
     case UserInput("leftKeyUp") => SetPlayerHorizontalVector(0)
   }
 
-  def vectorMods(data: StepData): VectorMods = {
-    stateDrivenVectorMods(data.state).addVectorMods(inputDrivenModOpt(Const.moveStepInPixels, data.input).toList)
+  def vectorMods(data: StepData): Seq[VectorMod] = {
+    addStateDrivenVectorMods(data.state, inputDrivenModOpt(Const.moveStepInPixels, data.input))
   }
 
   def coordMods(state: State): Seq[CoordMod] = List(

@@ -42,7 +42,7 @@ object State {
   def iteration(state: State, input: Option[UserInput]): State = {
     val stepData = StepData(state, input)
     val vectorMods = Step.vectorMods(stepData)
-    val stateAfterVectorMods = vectorMods.collisionMod.map(state.applyMod).getOrElse(state.applyModsList(vectorMods.normalVectorMods))
+    val stateAfterVectorMods = state.applyModsList(vectorMods)
     stateAfterVectorMods.applyModsList(Step.coordMods(stateAfterVectorMods))
   }
 }
