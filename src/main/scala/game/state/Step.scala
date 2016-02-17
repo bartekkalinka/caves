@@ -25,12 +25,8 @@ case class SetPlayerMapCoord(onMap: (Int, Int)) extends CoordMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends CoordMod
 
 object Step {
-  private def addStateDrivenVectorMods(state: State, inputDrivenModOption: Option[VectorMod]): Seq[VectorMod] = {
-    val gravityVectorMod = List(SetPlayerVerticalVector(state.player.vector._2 + Const.gravityAcceleration)).filter(_.mod <= Const.maxFallSpeed)
-    val collision = state.player.isAtCollisionVector(state.tilePixels)
-    val collisionModOption = collision.map(SetPlayerVectorLimitedByCollision)
-    collisionModOption.map(List[VectorMod](_)).getOrElse(inputDrivenModOption.toList ++ gravityVectorMod)
-  }
+  private def addStateDrivenVectorMods(state: State): Seq[VectorMod] =
+    List(SetPlayerVerticalVector(state.player.vector._2 + Const.gravityAcceleration)).filter(_.mod <= Const.maxFallSpeed)
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
     val newPos = player.movePlayerOnScreenMod.onScreen
@@ -46,8 +42,12 @@ object Step {
     case UserInput("leftKeyUp") => SetPlayerHorizontalVector(0)
   }
 
-  def vectorMods(data: StepData): Seq[VectorMod] = {
-    addStateDrivenVectorMods(data.state, inputDrivenModOpt(Const.moveStepInPixels, data.input))
+  def vectorMods(data: StepData): Seq[VectorMod] =
+    inputDrivenModOpt(Const.moveStepInPixels, data.input).toList ++ addStateDrivenVectorMods(data.state)
+
+  def checkCollision(state: State): Option[VectorMod] = {
+    val collision = state.player.isAtCollisionVector(state.tilePixels)
+    collision.map(SetPlayerVectorLimitedByCollision)
   }
 
   def coordMods(state: State): Seq[CoordMod] = List(
