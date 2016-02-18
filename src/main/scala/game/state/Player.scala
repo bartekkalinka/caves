@@ -2,7 +2,7 @@ package game.state
 
 import game.calculations.{ScreenCommon, CollisionDetection, Terrain}
 
-case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection) {
+case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection, onGround: Boolean) {
   val playerFigureLogicalCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
 
   def movePlayerOnMapMod: SetPlayerMapCoord = SetPlayerMapCoord(ScreenCommon.applyVector(onMap, vector))
@@ -29,6 +29,8 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
       copy(vector = (vector._1, newVectorY))
     case SetPlayerVectorLimitedByCollision(newVector) =>
       copy(vector = newVector)
+    case SetStandingOnGround(newOnGround) =>
+      copy(onGround = newOnGround)
   }
 }
 

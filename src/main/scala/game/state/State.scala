@@ -33,7 +33,8 @@ object State {
       onMap = initPlayerOnMap(Const.initTilePixels),
       vector = (0, 0),
       onScreen = initPlayerOnScreen(Const.initTilePixels),
-      faceDirection = FaceDirection.Straight
+      faceDirection = FaceDirection.Straight,
+      onGround = false
     ),
     score = 0,
     tilePixels = Const.initTilePixels
@@ -43,8 +44,8 @@ object State {
     val stepData = StepData(state, input)
     val vectorMods = Step.vectorMods(stepData)
     val stateAfterVectorMods = state.applyModsList(vectorMods)
-    val stateAfterCheckCollision = Step.checkCollision(stateAfterVectorMods).map(state.applyMod).getOrElse(stateAfterVectorMods)
-    stateAfterVectorMods.applyModsList(Step.coordMods(stateAfterCheckCollision))
+    val stateAfterCollisionMods = stateAfterVectorMods.applyModsList(Step.collisionMods(stateAfterVectorMods))
+    stateAfterVectorMods.applyModsList(Step.coordMods(stateAfterCollisionMods))
   }
 }
 

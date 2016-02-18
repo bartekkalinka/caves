@@ -16,6 +16,7 @@ object FaceDirection {
 sealed trait StateMod
 case class Zoom(in: Boolean) extends StateMod
 sealed trait PlayerMod extends StateMod
+case class SetStandingOnGround(value: Boolean) extends PlayerMod
 sealed trait VectorMod extends PlayerMod
 case class SetPlayerHorizontalVector(mod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends VectorMod
 case class SetPlayerVerticalVector(mod: Int) extends VectorMod
@@ -33,21 +34,30 @@ object Step {
     if(Screen.isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
-  private def inputDrivenModOpt(moveStepInPixels: Int, input: Option[UserInput]): Option[VectorMod] = input.collect  {
-    //TODO jump possible only when standing on something
-    case UserInput("rightKeyDown") => SetPlayerHorizontalVector(moveStepInPixels, FaceDirection.Right)
-    case UserInput("upKeyDown") => SetPlayerVerticalVector(-moveStepInPixels)
-    case UserInput("leftKeyDown") => SetPlayerHorizontalVector(-moveStepInPixels, FaceDirection.Left)
-    case UserInput("rightKeyUp") => SetPlayerHorizontalVector(0)
-    case UserInput("leftKeyUp") => SetPlayerHorizontalVector(0)
+  private def inputDrivenModOpt(player: Player, moveStepInPixels: Int, input: Option[UserInput]): Option[VectorMod] = input.flatMap {
+    case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(moveStepInPixels, FaceDirection.Right))
+    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-moveStepInPixels)).filter(x => player.onGround)
+    case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-moveStepInPixels, FaceDirection.Left))
+    case UserInput("rightKeyUp") => Some(SetPlayerHorizontalVector(0))
+    case UserInput("leftKeyUp") => Some(SetPlayerHorizontalVector(0))
+    case _ => None
   }
 
   def vectorMods(data: StepData): Seq[VectorMod] =
-    inputDrivenModOpt(Const.moveStepInPixels, data.input).toList ++ addStateDrivenVectorMods(data.state)
+    inputDrivenModOpt(data.state.player, Const.moveStepInPixels, data.input).toList ++ addStateDrivenVectorMods(data.state)
 
-  def checkCollision(state: State): Option[VectorMod] = {
+  def collisionMods(state: State): Seq[PlayerMod] =
+    checkCollision(state).toList :+ checkIfStandingOnGround(state)
+
+  private def checkCollision(state: State): Option[VectorMod] = {
     val collision = state.player.isAtCollisionVector(state.tilePixels)
     collision.map(SetPlayerVectorLimitedByCollision)
+  }
+
+  private def checkIfStandingOnGround(state: State): SetStandingOnGround = {
+    val playerVectorsVerticalCompound = (0, state.player.vector._2)
+    val collisionWithGround = state.player.copy(vector = playerVectorsVerticalCompound).isAtCollisionVector(state.tilePixels)
+    SetStandingOnGround(collisionWithGround.contains((0, 0)))
   }
 
   def coordMods(state: State): Seq[CoordMod] = List(
