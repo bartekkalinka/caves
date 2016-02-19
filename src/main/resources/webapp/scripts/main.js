@@ -41,6 +41,10 @@ function onMessage(evt) {
    draw.clearCanvas();
    draw.drawShape(obj.shape.tiles, obj.offset);
    draw.drawPlayer(obj.player.x, obj.player.y, obj.faceDirection[0]);
+   debugMessage(obj);
+}
+function debugMessage(obj) {
+   $("#debug").html(obj.debug.onGround?"true":"false");
 }
 function onError(evt) {
 }
