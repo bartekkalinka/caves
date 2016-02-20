@@ -1,7 +1,7 @@
 package game.state
 
 import game.Const
-import game.calculations.Terrain
+import game.calculations.{ScreenCommon, Terrain}
 
 case class State(player: Player, score: Int, tilePixels: Int)
 {
@@ -11,7 +11,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
       val newTilePixels =
         if (in) math.floor(tilePixels * Const.zoomFactor).toInt
         else math.floor(tilePixels / Const.zoomFactor).toInt
-      val newPlayerOnScreen = State.tileEven(newTilePixels, player.onScreen)
+      val newPlayerOnScreen = ScreenCommon(newTilePixels).tileEven(player.onScreen)
       this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen))
   }
 
@@ -20,22 +20,8 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def tileEven(tilePixels: Int, coord: (Int, Int)) = (coord._1 - coord._1 % tilePixels, coord._2 - coord._2 % tilePixels)
-
-  private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
-    tileEven(tilePixels, (Const.screenWidth / 2, Const.screenHeight / 2))
-
-  private def initPlayerOnMap(tilePixels: Int): (Int, Int) =
-    Stream.from(0).find(x => !Terrain(tilePixels).isTileSet((x, 0))).map((_, 0)).getOrElse((0, 0))
-
   def init: State = State(
-    player = Player(
-      onMap = initPlayerOnMap(Const.initTilePixels),
-      vector = (0, 0),
-      onScreen = initPlayerOnScreen(Const.initTilePixels),
-      faceDirection = FaceDirection.Straight,
-      onGround = false
-    ),
+    player = Player.initPlayer(Const.initTilePixels),
     score = 0,
     tilePixels = Const.initTilePixels
   )

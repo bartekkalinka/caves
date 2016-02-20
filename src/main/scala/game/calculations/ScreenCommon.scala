@@ -10,6 +10,8 @@ object ScreenCommon {
 }
 
 case class ScreenCommon(tilePixels: Int) {
+  def tileEven(coord: (Int, Int)) = (coord._1 - coord._1 % tilePixels, coord._2 - coord._2 % tilePixels)
+
   def fluentDiv(a: Int, b: Int) = if(a < 0) (a + 1) / b - 1 else a / b
 
   def absModulo(a: Int, b: Int) = if(a < 0) (b + a % b) % b else a % b

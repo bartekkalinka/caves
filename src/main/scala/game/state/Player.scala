@@ -1,5 +1,6 @@
 package game.state
 
+import game.Const
 import game.calculations.{ScreenCommon, CollisionDetection, Terrain}
 
 case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection, onGround: Boolean) {
@@ -32,5 +33,25 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
     case SetStandingOnGround(newOnGround) =>
       copy(onGround = newOnGround)
   }
+
+  def moveToFreeSpotOnMap(tilePixels: Int) =
+    this.copy(onMap =
+      Stream.from(0).find(x =>
+        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(tilePixels).isEmpty
+      ).map((_, 0)).getOrElse((0, 0)))
+}
+
+object Player {
+  private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
+    ScreenCommon(tilePixels).tileEven((Const.screenWidth / 2, Const.screenHeight / 2))
+
+  def initPlayer(tilePixels: Int): Player =
+    Player(
+      onMap = (0, 0),
+      vector = (0, 0),
+      onScreen = initPlayerOnScreen(Const.initTilePixels),
+      faceDirection = FaceDirection.Straight,
+      onGround = false
+    ).moveToFreeSpotOnMap(tilePixels)
 }
 
