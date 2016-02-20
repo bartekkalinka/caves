@@ -34,17 +34,17 @@ object Step {
     if(Screen.isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
-  private def inputDrivenModOpt(player: Player, moveStepInPixels: Int, input: Option[UserInput]): Option[VectorMod] = input.flatMap {
-    case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(moveStepInPixels, FaceDirection.Right))
-    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-moveStepInPixels)).filter(x => player.onGround)
-    case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-moveStepInPixels, FaceDirection.Left))
+  private def inputDrivenModOpt(player: Player, input: Option[UserInput]): Option[VectorMod] = input.flatMap {
+    case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(Const.moveStepInPixels, FaceDirection.Right))
+    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-Const.moveStepInPixels)).filter(x => player.onGround)
+    case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-Const.moveStepInPixels, FaceDirection.Left))
     case UserInput("rightKeyUp") => Some(SetPlayerHorizontalVector(0))
     case UserInput("leftKeyUp") => Some(SetPlayerHorizontalVector(0))
     case _ => None
   }
 
   def vectorMods(data: StepData): Seq[VectorMod] =
-    inputDrivenModOpt(data.state.player, Const.moveStepInPixels, data.input).toList ++ addStateDrivenVectorMods(data.state)
+    inputDrivenModOpt(data.state.player, data.input).toList ++ addStateDrivenVectorMods(data.state)
 
   def collisionMods(state: State): Seq[PlayerMod] =
     checkCollision(state).toList :+ checkIfStandingOnGround(state)
@@ -55,7 +55,7 @@ object Step {
   }
 
   private def checkIfStandingOnGround(state: State): SetStandingOnGround = {
-    val playerVectorsVerticalCompound = (0, state.player.vector._2)
+    val playerVectorsVerticalCompound = (0, Const.moveStepInPixels)
     val collisionWithGround = state.player.copy(vector = playerVectorsVerticalCompound).isAtCollisionVector(state.tilePixels)
     SetStandingOnGround(collisionWithGround.contains((0, 0)))
   }
