@@ -4,7 +4,6 @@ import game.Const
 import game.calculations.Screen
 
 case class UserInput(dir: String)
-case class StepData(state: State, input: Option[UserInput])
 
 sealed trait FaceDirection
 object FaceDirection {
@@ -43,8 +42,8 @@ object Step {
     case _ => None
   }
 
-  def vectorMods(data: StepData): Seq[VectorMod] =
-    inputDrivenModOpt(data.state.player, data.input).toList ++ addStateDrivenVectorMods(data.state)
+  def vectorMods(input: Option[UserInput])(state: State): Seq[VectorMod] =
+    inputDrivenModOpt(state.player, input).toList ++ addStateDrivenVectorMods(state)
 
   def collisionMods(state: State): Seq[PlayerMod] =
     checkCollision(state).toList :+ checkIfStandingOnGround(state)

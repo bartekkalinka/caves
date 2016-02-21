@@ -27,11 +27,13 @@ object State {
   )
 
   def iteration(state: State, input: Option[UserInput]): State = {
-    val stepData = StepData(state, input)
-    val vectorMods = Step.vectorMods(stepData)
-    val stateAfterVectorMods = state.applyModsList(vectorMods)
-    val stateAfterCollisionMods = stateAfterVectorMods.applyModsList(Step.collisionMods(stateAfterVectorMods))
-    stateAfterCollisionMods.applyModsList(Step.coordMods(stateAfterCollisionMods))
+    val modsSuppliers: List[State => Seq[StateMod]] =
+      List(
+        Step.vectorMods(input),
+        Step.collisionMods,
+        Step.coordMods
+      )
+    modsSuppliers.foldLeft(state)((st, modsSupplier) => st.applyModsList(modsSupplier(st)))
   }
 }
 
