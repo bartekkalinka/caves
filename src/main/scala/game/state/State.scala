@@ -17,6 +17,8 @@ case class State(player: Player, score: Int, tilePixels: Int)
 
   def applyModsList(mods: Seq[StateMod]): State =
     mods.foldLeft(this)((st, mod) => st.applyMod(mod))
+
+  def resetDebug: State = copy(player = player.resetDebug)
 }
 
 object State {
@@ -33,7 +35,6 @@ object State {
         Step.collisionMods,
         Step.coordMods
       )
-    modsSuppliers.foldLeft(state)((st, modsSupplier) => st.applyModsList(modsSupplier(st)))
+    modsSuppliers.foldLeft(state.resetDebug)((st, modsSupplier) => st.applyModsList(modsSupplier(st)))
   }
 }
-

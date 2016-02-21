@@ -3,7 +3,16 @@ package game.state
 import game.Const
 import game.calculations.{ScreenCommon, CollisionDetection, Terrain}
 
-case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), faceDirection: FaceDirection, onGround: Boolean) {
+case class PlayerDebugInfo(collisionLimitedVector: Option[(Int, Int)])
+
+case class Player(
+  onMap: (Int, Int),
+  vector: (Int, Int),
+  onScreen: (Int, Int),
+  faceDirection: FaceDirection,
+  onGround: Boolean,
+  debugInfo: PlayerDebugInfo
+) {
   val playerFigureLogicalCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
 
   def movePlayerOnMapMod: SetPlayerMapCoord = SetPlayerMapCoord(ScreenCommon.applyVector(onMap, vector))
@@ -29,7 +38,7 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
     case SetPlayerVerticalVector(newVectorY) =>
       copy(vector = (vector._1, newVectorY))
     case SetPlayerVectorLimitedByCollision(newVector) =>
-      copy(vector = newVector)
+      copy(vector = newVector, debugInfo = PlayerDebugInfo(Some(newVector)))
     case SetStandingOnGround(newOnGround) =>
       copy(onGround = newOnGround)
   }
@@ -39,6 +48,8 @@ case class Player(onMap: (Int, Int), vector: (Int, Int), onScreen: (Int, Int), f
       Stream.from(0).find(x =>
         this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(tilePixels).isEmpty
       ).map((_, 0)).getOrElse((0, 0)))
+
+  def resetDebug: Player = copy(debugInfo = PlayerDebugInfo(None))
 }
 
 object Player {
@@ -49,9 +60,10 @@ object Player {
     Player(
       onMap = (0, 0),
       vector = (0, 0),
-      onScreen = initPlayerOnScreen(Const.initTilePixels),
+      onScreen = initPlayerOnScreen(tilePixels),
       faceDirection = FaceDirection.Straight,
-      onGround = false
+      onGround = false,
+      debugInfo = PlayerDebugInfo(None)
     ).moveToFreeSpotOnMap(tilePixels)
 }
 

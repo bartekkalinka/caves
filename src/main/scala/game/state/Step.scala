@@ -35,7 +35,7 @@ object Step {
 
   private def inputDrivenModOpt(player: Player, input: Option[UserInput]): Option[VectorMod] = input.flatMap {
     case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(Const.moveStepInPixels, FaceDirection.Right))
-    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-Const.moveStepInPixels)).filter(x => player.onGround)
+    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-Const.moveStepInPixels))//.filter(x => player.onGround)
     case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-Const.moveStepInPixels, FaceDirection.Left))
     case UserInput("rightKeyUp") => Some(SetPlayerHorizontalVector(0))
     case UserInput("leftKeyUp") => Some(SetPlayerHorizontalVector(0))
@@ -54,8 +54,8 @@ object Step {
   }
 
   private def checkIfStandingOnGround(state: State): SetStandingOnGround = {
-    val playerVectorsVerticalCompound = (0, Const.moveStepInPixels)
-    val collisionWithGround = state.player.copy(vector = playerVectorsVerticalCompound).isAtCollisionVector(state.tilePixels)
+    val fallALittleVector = (0, Const.moveStepInPixels)
+    val collisionWithGround = state.player.copy(vector = fallALittleVector).isAtCollisionVector(state.tilePixels)
     SetStandingOnGround(collisionWithGround.contains((0, 0)))
   }
 

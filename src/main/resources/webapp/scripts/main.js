@@ -44,7 +44,7 @@ function onMessage(evt) {
    debugMessage(obj);
 }
 function debugMessage(obj) {
-   $("#debug").html(obj.debug.onGround?"true":"false");
+   $("#debug").html(obj.debugInfo);
 }
 function onError(evt) {
 }
