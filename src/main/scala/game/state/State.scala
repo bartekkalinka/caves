@@ -31,7 +31,7 @@ object State {
     val vectorMods = Step.vectorMods(stepData)
     val stateAfterVectorMods = state.applyModsList(vectorMods)
     val stateAfterCollisionMods = stateAfterVectorMods.applyModsList(Step.collisionMods(stateAfterVectorMods))
-    stateAfterVectorMods.applyModsList(Step.coordMods(stateAfterCollisionMods))
+    stateAfterCollisionMods.applyModsList(Step.coordMods(stateAfterCollisionMods))
   }
 }
 
