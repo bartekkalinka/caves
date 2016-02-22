@@ -25,7 +25,8 @@ case class SetPlayerMapCoord(onMap: (Int, Int)) extends CoordMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends CoordMod
 
 object Step {
-  private def addStateDrivenVectorMods(state: State): Seq[VectorMod] =
+  private def stateDrivenVectorMods(state: State): Seq[VectorMod] =
+    //TODO implement gravity as ModifyPlayerVerticalVector mod
     List(SetPlayerVerticalVector(state.player.vector._2 + Const.gravityAcceleration)).filter(_.mod <= Const.maxFallSpeed)
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
@@ -43,7 +44,7 @@ object Step {
   }
 
   def vectorMods(input: Option[UserInput])(state: State): Seq[VectorMod] =
-    inputDrivenModOpt(state.player, input).toList ++ addStateDrivenVectorMods(state)
+    stateDrivenVectorMods(state) ++ inputDrivenModOpt(state.player, input).toList
 
   def collisionMods(state: State): Seq[PlayerMod] =
     checkCollision(state).toList :+ checkIfStandingOnGround(state)
