@@ -41,6 +41,8 @@ case class Player(
       copy(vector = newVector, debugInfo = PlayerDebugInfo(Some(newVector)))
     case SetStandingOnGround(newOnGround) =>
       copy(onGround = newOnGround)
+    case ModifyPlayerVerticalVectorBy(acc) =>
+      copy(vector = (vector._1, vector._2 + acc))
   }
 
   def moveToFreeSpotOnMap(tilePixels: Int) =

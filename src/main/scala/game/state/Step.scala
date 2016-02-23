@@ -20,14 +20,14 @@ sealed trait VectorMod extends PlayerMod
 case class SetPlayerHorizontalVector(mod: Int, faceDirection: FaceDirection = FaceDirection.Straight) extends VectorMod
 case class SetPlayerVerticalVector(mod: Int) extends VectorMod
 case class SetPlayerVectorLimitedByCollision(mod: (Int, Int)) extends VectorMod
+case class ModifyPlayerVerticalVectorBy(acc: Int) extends VectorMod
 sealed trait CoordMod extends PlayerMod
 case class SetPlayerMapCoord(onMap: (Int, Int)) extends CoordMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends CoordMod
 
 object Step {
   private def stateDrivenVectorMods(state: State): Seq[VectorMod] =
-    //TODO implement gravity as ModifyPlayerVerticalVector mod
-    List(SetPlayerVerticalVector(state.player.vector._2 + Const.gravityAcceleration)).filter(_.mod <= Const.maxFallSpeed)
+    List(ModifyPlayerVerticalVectorBy(Const.gravityAcceleration)).filter(v => state.player.vector._2 <= Const.maxFallSpeed)
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
     val newPos = player.movePlayerOnScreenMod.onScreen
@@ -36,7 +36,7 @@ object Step {
 
   private def inputDrivenModOpt(player: Player, input: Option[UserInput]): Option[VectorMod] = input.flatMap {
     case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(Const.moveStepInPixels, FaceDirection.Right))
-    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-Const.moveStepInPixels))//.filter(x => player.onGround)
+    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-Const.moveStepInPixels)).filter(x => player.onGround)
     case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-Const.moveStepInPixels, FaceDirection.Left))
     case UserInput("rightKeyUp") => Some(SetPlayerHorizontalVector(0))
     case UserInput("leftKeyUp") => Some(SetPlayerHorizontalVector(0))
@@ -44,7 +44,7 @@ object Step {
   }
 
   def vectorMods(input: Option[UserInput])(state: State): Seq[VectorMod] =
-    stateDrivenVectorMods(state) ++ inputDrivenModOpt(state.player, input).toList
+    inputDrivenModOpt(state.player, input).toList ++ stateDrivenVectorMods(state)
 
   def collisionMods(state: State): Seq[PlayerMod] =
     checkCollision(state).toList :+ checkIfStandingOnGround(state)
