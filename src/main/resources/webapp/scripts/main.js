@@ -44,7 +44,13 @@ function onMessage(evt) {
    debugMessage(obj);
 }
 function debugMessage(obj) {
-   $("#debug").html(obj.debugInfo);
+    if(glob.debugConcat) {
+      glob.debugInfo = glob.debugInfo + obj.debugInfo;
+    }
+    else {
+      glob.debugInfo = obj.debugInfo;
+    }
+    $("#debug").html(glob.debugInfo);
 }
 function onError(evt) {
 }
@@ -74,6 +80,9 @@ function doKeyDown(e) {
       break;
   case 109: //-
       doSend("zoomout");
+      break;
+  case 68: //d
+      glob.debugConcat = !glob.debugConcat;
       break;
   }
 }
