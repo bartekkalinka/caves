@@ -19,7 +19,7 @@ case class Player(
 
   def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(ScreenCommon.applyVector(onScreen, vector))
 
-  private def isVectorACollisionVector(hypotheticalVector: (Int, Int), tilePixels: Int): Option[(Int, Int)] = {
+  private def collisionVectorHypothesis(hypotheticalVector: (Int, Int), tilePixels: Int): Option[(Int, Int)] = {
     if(hypotheticalVector != (0, 0)) {
       val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
       val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, hypotheticalVector))
@@ -28,10 +28,13 @@ case class Player(
     else None
   }
 
+  private def enforcedCollisionVectorHypothesis(hypotheticalVector: (Int, Int), tilePixels: Int): (Int, Int) =
+    collisionVectorHypothesis(hypotheticalVector, tilePixels).getOrElse(hypotheticalVector)
+
   def isAtCollisionVector(tilePixels: Int): Option[(Int, Int)] = {
-      val straightOnTry = isVectorACollisionVector(vector, tilePixels)
-      lazy val verticalTry = isVectorACollisionVector((0, vector._2), tilePixels).orElse(Some(0, vector._2)) //TODO refactor
-      lazy val horizontalTry = isVectorACollisionVector((vector._1, 0), tilePixels).orElse(Some(vector._1, 0)) //TODO refactor
+      val straightOnTry = collisionVectorHypothesis(vector, tilePixels)
+      lazy val verticalTry = Some(enforcedCollisionVectorHypothesis((0, vector._2), tilePixels))
+      lazy val horizontalTry = Some(enforcedCollisionVectorHypothesis((vector._1, 0), tilePixels))
       Stream(straightOnTry, verticalTry, horizontalTry).find(!_.contains((0, 0))).getOrElse(straightOnTry)
   }
 
