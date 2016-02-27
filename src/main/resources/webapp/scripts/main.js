@@ -4,7 +4,7 @@ require.config({
     urlArgs: "bust=" + (new Date()).getTime()
 });
 
-requirejs(['scripts/globals', 'scripts/draw'], function(glob, draw) {
+requirejs(['scripts/globals', 'scripts/draw', 'scripts/debug'], function(glob, draw, debug) {
 $(document).ready(function() {
 var wsUri = "ws://" + window.location.hostname + ":" + window.location.port + "/game?name=aaa";
 var websocket;
@@ -41,21 +41,11 @@ function onMessage(evt) {
    draw.clearCanvas();
    draw.drawShape(obj.shape.tiles, obj.offset);
    draw.drawPlayer(obj.player.x, obj.player.y, obj.faceDirection[0]);
-   debugMessage(obj);
-}
-function debugMessage(obj) {
-    if(glob.debugConcat) {
-      glob.debugInfo = glob.debugInfo + obj.debugInfo;
-    }
-    else {
-      glob.debugInfo = obj.debugInfo;
-    }
-    $("#debug").html(glob.debugInfo);
+   debug.message(obj.debugInfo);
 }
 function onError(evt) {
 }
 function doSend(message) {
-    //$("#debug").html(message);
     websocket.send(message);
 }
 
@@ -82,7 +72,7 @@ function doKeyDown(e) {
       doSend("zoomout");
       break;
   case 68: //d
-      glob.debugConcat = !glob.debugConcat;
+      debug.toggleConcatFlag();
       break;
   }
 }
