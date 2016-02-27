@@ -6,6 +6,7 @@ define( {
     grid : [],
     debug : {
         concat : false,
-        info : ""
+        info : "",
+        pause : false
     }
 });

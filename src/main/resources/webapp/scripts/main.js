@@ -74,6 +74,9 @@ function doKeyDown(e) {
   case 68: //d
       debug.toggleConcatFlag();
       break;
+  case 80: //p
+      debug.togglePause();
+      break;
   }
 }
 function doKeyUp(e) {

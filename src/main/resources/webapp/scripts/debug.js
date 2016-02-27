@@ -2,6 +2,7 @@
 
 define( ['scripts/globals'], function (glob) {
     function handleMessage(message) {
+        if(glob.debug.pause) return;
         if(glob.debug.concat) {
           glob.debug.info = glob.debug.info + message;
         }
@@ -15,8 +16,13 @@ define( ['scripts/globals'], function (glob) {
         glob.debug.concat = !glob.debug.concat;
     }
 
+    function togglePause() {
+        glob.debug.pause = !glob.debug.pause;
+    }
+
     return {
         "handleMessage" : handleMessage,
-        "toggleConcatFlag" : toggleConcatFlag
+        "toggleConcatFlag" : toggleConcatFlag,
+        "togglePause" : togglePause
     };
 });
