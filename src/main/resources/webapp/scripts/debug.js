@@ -5,6 +5,7 @@ define( ['scripts/globals'], function (glob) {
         if(glob.debug.pause) return;
         if(glob.debug.concat) {
           glob.debug.messages.push(message);
+          if(glob.debug.messages.length > glob.debug.messagesMaxLength) glob.debug.messages.shift();
         }
         else {
           glob.debug.messages = [];
