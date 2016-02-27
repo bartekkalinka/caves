@@ -4,6 +4,8 @@ define( {
     targetDetail : 3,
     detailMult : 8,
     grid : [],
-    debugConcat : false,
-    debugInfo: ""
+    debug : {
+        concat : false,
+        info : ""
+    }
 });

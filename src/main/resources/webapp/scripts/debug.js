@@ -1,22 +1,22 @@
 "use strict";
 
 define( ['scripts/globals'], function (glob) {
-    function message(debugMessage) {
-        if(glob.debugConcat) {
-          glob.debugInfo = glob.debugInfo + debugMessage;
+    function handleMessage(message) {
+        if(glob.debug.concat) {
+          glob.debug.info = glob.debug.info + message;
         }
         else {
-          glob.debugInfo = debugMessage;
+          glob.debug.info = message;
         }
-        $("#debug").html(glob.debugInfo);
+        $("#debug").html(glob.debug.info);
     }
 
     function toggleConcatFlag() {
-        glob.debugConcat = !glob.debugConcat;
+        glob.debug.concat = !glob.debug.concat;
     }
 
     return {
-        "message" : message,
+        "handleMessage" : handleMessage,
         "toggleConcatFlag" : toggleConcatFlag
     };
 });
