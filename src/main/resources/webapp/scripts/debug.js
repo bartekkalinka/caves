@@ -4,13 +4,21 @@ define( ['scripts/globals'], function (glob) {
     function handleMessage(message) {
         if(glob.debug.pause) return;
         if(glob.debug.concat) {
-          glob.debug.info = glob.debug.info + message;
+          glob.debug.messages.push(message);
         }
         else {
-          glob.debug.info = "";
+          glob.debug.messages = [];
         }
         $("#shortDebug").html(message);
-        $("#longDebug").html(glob.debug.info);
+        renderMessages();
+    }
+
+    function renderMessages() {
+        var i, rendered = "";
+        for(i=0; i<glob.debug.messages.length; i++) {
+            rendered += (glob.debug.messages[i] + "<br>");
+        }
+        $("#longDebug").html(rendered);
     }
 
     function toggleConcatFlag() {
