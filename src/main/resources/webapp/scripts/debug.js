@@ -7,9 +7,10 @@ define( ['scripts/globals'], function (glob) {
           glob.debug.info = glob.debug.info + message;
         }
         else {
-          glob.debug.info = message;
+          glob.debug.info = "";
         }
-        $("#debug").html(glob.debug.info);
+        $("#shortDebug").html(message);
+        $("#longDebug").html(glob.debug.info);
     }
 
     function toggleConcatFlag() {
