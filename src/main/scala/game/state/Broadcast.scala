@@ -21,8 +21,10 @@ object Broadcast
   private def packShape(shape: Shape): PackedShape = PackedShape(shape.tiles.map(_.map(if(_) "1" else "0").reduce(_ + _)))
 
   private def debugInfo(state: State): String = {
+    def booleanToString(value: Boolean, name: String): String = s"$name:${value.toString.substring(0, 1)}"
     val collisionVectorStr = state.player.debugInfo.collisionLimitedVector.map(_.toString()).getOrElse("")
-    s"${state.player.onGround} $collisionVectorStr"
+    val onGroundStr = booleanToString(state.player.onGround, "gnd")
+    s"$onGroundStr $collisionVectorStr"
   }
 
   def fromState(state: State): Broadcast = {
