@@ -7,6 +7,9 @@ case class CoordAndOffset(coord: (Int, Int), offset: (Int, Int))
 object ScreenCommon {
   def applyVector(coord: (Int, Int), vector: (Int, Int)): (Int, Int) =
     (coord._1 + vector._1, coord._2 + vector._2)
+
+  def minimumVector(vectors: Seq[(Int, Int)]) =
+    vectors.minBy { case (vx, vy) => (Math.abs(vx), Math.abs(vy)) }
 }
 
 case class ScreenCommon(tilePixels: Int) {

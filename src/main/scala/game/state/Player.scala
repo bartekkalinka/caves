@@ -23,7 +23,10 @@ case class Player(
     if(hypotheticalVector != (0, 0)) {
       val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
       val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, hypotheticalVector))
-      if (collisionVectors.isEmpty) None else Some(collisionVectors.min)
+      if (collisionVectors.isEmpty)
+        None
+      else
+        Some(ScreenCommon.minimumVector(collisionVectors))
     }
     else None
   }
