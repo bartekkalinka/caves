@@ -7,7 +7,7 @@ define( {
     debug : {
         concat : false,
         messages : [],
-        messagesMaxLength : 20,
+        messagesMaxLength : 30,
         pause : false
     }
 });

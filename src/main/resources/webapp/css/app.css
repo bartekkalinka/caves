@@ -3,9 +3,12 @@
 body {
   padding-top: 20px;
   font-family: "Courier New", Courier, monospace;
+  font-size: 75%;
 }
 
 ul {
     list-style-type: none;
 }
+
+
 
