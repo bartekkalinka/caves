@@ -11,6 +11,7 @@ case class Player(
   onScreen: (Int, Int),
   faceDirection: FaceDirection,
   onGround: Boolean,
+  tilePixels: Int,
   debugInfo: PlayerDebugInfo
 ) {
   val playerFigureLogicalCorners = List((0, 0), (1, 0), (0, 1), (1, 1), (0, 2), (1, 2))
@@ -19,7 +20,7 @@ case class Player(
 
   def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(ScreenCommon.applyVector(onScreen, vector))
 
-  private def collisionVectorHypothesis(hypotheticalVector: (Int, Int), tilePixels: Int): Option[(Int, Int)] = {
+  private def collisionVectorHypothesis(hypotheticalVector: (Int, Int)): Option[(Int, Int)] = {
     if(hypotheticalVector != (0, 0)) {
       val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
       val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, hypotheticalVector))
@@ -31,13 +32,13 @@ case class Player(
     else None
   }
 
-  private def enforcedCollisionVectorHypothesis(hypotheticalVector: (Int, Int), tilePixels: Int): (Int, Int) =
-    collisionVectorHypothesis(hypotheticalVector, tilePixels).getOrElse(hypotheticalVector)
+  private def enforcedCollisionVectorHypothesis(hypotheticalVector: (Int, Int)): (Int, Int) =
+    collisionVectorHypothesis(hypotheticalVector).getOrElse(hypotheticalVector)
 
-  def isAtCollisionVector(tilePixels: Int): Option[(Int, Int)] = {
-      val straightOnTry = collisionVectorHypothesis(vector, tilePixels)
-      lazy val verticalTry = Some(enforcedCollisionVectorHypothesis((0, vector._2), tilePixels))
-      lazy val horizontalTry = Some(enforcedCollisionVectorHypothesis((vector._1, 0), tilePixels))
+  def isAtCollisionVector: Option[(Int, Int)] = {
+      val straightOnTry = collisionVectorHypothesis(vector)
+      lazy val verticalTry = Some(enforcedCollisionVectorHypothesis((0, vector._2)))
+      lazy val horizontalTry = Some(enforcedCollisionVectorHypothesis((vector._1, 0)))
       Stream(straightOnTry, verticalTry, horizontalTry).find(!_.contains((0, 0))).getOrElse(straightOnTry)
   }
 
@@ -58,10 +59,10 @@ case class Player(
       copy(vector = (vector._1, vector._2 + acc))
   }
 
-  def moveToFreeSpotOnMap(tilePixels: Int) =
+  def moveToFreeSpotOnMap =
     this.copy(onMap =
       Stream.from(0).find(x =>
-        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(tilePixels).isEmpty
+        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector.isEmpty
       ).map((_, 0)).getOrElse((0, 0)))
 
   def resetDebug: Player = copy(debugInfo = PlayerDebugInfo(None))
@@ -71,14 +72,15 @@ object Player {
   private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
     ScreenCommon(tilePixels).tileEven((Const.screenWidth / 2, Const.screenHeight / 2))
 
-  def initPlayer(tilePixels: Int): Player =
+  def initPlayer(initTilePixels: Int): Player =
     Player(
       onMap = (0, 0),
       vector = (0, 0),
-      onScreen = initPlayerOnScreen(tilePixels),
+      onScreen = initPlayerOnScreen(initTilePixels),
       faceDirection = FaceDirection.Straight,
       onGround = false,
+      tilePixels = initTilePixels,
       debugInfo = PlayerDebugInfo(None)
-    ).moveToFreeSpotOnMap(tilePixels)
+    ).moveToFreeSpotOnMap
 }
 

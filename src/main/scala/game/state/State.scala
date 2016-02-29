@@ -12,7 +12,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
         if (in) math.floor(tilePixels * Const.zoomFactor).toInt
         else math.floor(tilePixels / Const.zoomFactor).toInt
       val newPlayerOnScreen = ScreenCommon(newTilePixels).tileEven(player.onScreen)
-      this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen))
+      this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen, tilePixels = newTilePixels))
   }
 
   def applyModsList(mods: Seq[StateMod]): State =
