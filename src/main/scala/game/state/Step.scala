@@ -36,7 +36,7 @@ object Step {
 
   private def inputDrivenModOpt(player: Player, input: Option[UserInput]): Option[StateMod] = input.flatMap {
     case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(Const.moveStepInPixels, FaceDirection.Right))
-    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-Const.moveStepInPixels)).filter(x => player.onGround)
+    case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-2 * Const.moveStepInPixels)).filter(x => player.onGround)
     case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-Const.moveStepInPixels, FaceDirection.Left))
     case UserInput("zoomin") => Some(Zoom(true))
     case UserInput("zoomout") => Some(Zoom(false))
