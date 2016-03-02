@@ -2,15 +2,18 @@
 
 define( ['scripts/globals'], function (glob) {
     function handleMessage(message) {
+        var shortMessage;
         if(glob.debug.pause) return;
-        if(glob.debug.concat) {
+        if(glob.debug.show) {
           glob.debug.messages.push(message);
           if(glob.debug.messages.length > glob.debug.messagesMaxLength) glob.debug.messages.shift();
+          shortMessage = message;
         }
         else {
           glob.debug.messages = [];
+          shortMessage = "";
         }
-        $("#shortDebug").html(message);
+        $("#shortDebug").html(shortMessage);
         renderMessages();
     }
 
@@ -22,8 +25,8 @@ define( ['scripts/globals'], function (glob) {
         $("#longDebug").html(rendered);
     }
 
-    function toggleConcatFlag() {
-        glob.debug.concat = !glob.debug.concat;
+    function toggleShowFlag() {
+        glob.debug.show = !glob.debug.show;
     }
 
     function togglePause() {
@@ -32,7 +35,7 @@ define( ['scripts/globals'], function (glob) {
 
     return {
         "handleMessage" : handleMessage,
-        "toggleConcatFlag" : toggleConcatFlag,
+        "toggleShowFlag" : toggleShowFlag,
         "togglePause" : togglePause
     };
 });

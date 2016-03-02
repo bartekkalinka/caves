@@ -5,7 +5,7 @@ define( {
     detailMult : 8,
     grid : [],
     debug : {
-        concat : false,
+        show : false,
         messages : [],
         messagesMaxLength : 30,
         pause : false

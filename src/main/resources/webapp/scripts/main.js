@@ -72,7 +72,7 @@ function doKeyDown(e) {
       doSend("zoomout");
       break;
   case 68: //d
-      debug.toggleConcatFlag();
+      debug.toggleShowFlag();
       break;
   case 80: //p
       debug.togglePause();
