@@ -1,11 +1,9 @@
-package game
-
-import pl.bka.shapegenweb.{Terrain => ShapeGenTerrain, Config, Noise}
+package shapegen
 
 object ShapeGenWrapper {
   val neededLevel = 6
 
-  val terrain = new ShapeGenTerrain(Config(0, neededLevel))
+  val terrain = new Terrain(Config(0, neededLevel))
 
   private def getNoise(x: Int, y: Int, more: Boolean = false): Noise = {
     val current = if(!more) terrain.get(x, y) else terrain.moreDetail(x, y)

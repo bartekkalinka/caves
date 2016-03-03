@@ -2,6 +2,7 @@ package game.calculations
 
 import game._
 import game.state.Shape
+import shapegen.ShapeGenWrapper
 
 case class Terrain(tilePixels: Int) {
   def isTileSet(mapPixelCoord: (Int, Int)): Boolean = {
