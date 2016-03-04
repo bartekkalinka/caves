@@ -1,6 +1,4 @@
-/**
- * Created by bka on 15.03.15.
- */
+
 package shapegen
 
 import scala.collection.mutable
