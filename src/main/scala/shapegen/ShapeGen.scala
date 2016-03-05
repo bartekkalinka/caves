@@ -50,7 +50,7 @@ class Terrain(neededLevel: Int) {
   }
 
   private def noiseStream(x: Int, y: Int): Stream[Noise] = {
-    def localGet = safeGet(x, y)
+    def localGet = safeGet(x, y) _
     Stream.iterate(Noise.base)(_.nextLevel(localGet))
   }
 
@@ -64,27 +64,29 @@ class Terrain(neededLevel: Int) {
     }
   }
 
-  def safeGet(x: Int, y: Int) =
-    (noise: Array[Array[Int]], level: Int) =>
-      (a: Int, b: Int) => {
-        val size = Noise.detailSize(Noise.levDetail(level))
-        def neighbourCoord(z: Int, c: Int) = if (c < 0) (z - 1, c + size) else if (c >= size) (z + 1, c - size) else (z, c)
-        val (xx, aa) = neighbourCoord(x, a)
-        val (yy, bb) = neighbourCoord(y, b)
-        if (xx != x || yy != y) {
-          val stream = getCurrent(xx, yy)
-          val reqLevel = reqNeighbourLevel(level)
-          stream(reqLevel).noise(aa)(bb)
-        } else {
-          noise(a)(b)
-        }
-      }
+  def safeGet(shapeX: Int, shapeY: Int)(noise: Array[Array[Int]], level: Int)(tileX: Int, tileY: Int) = {
+    val size = Noise.detailSize(Noise.levDetail(level))
+    def toRealCoord(shapeCoord: Int, tileCoord: Int) =
+      if (tileCoord < 0) (shapeCoord - 1, tileCoord + size)
+      else
+        if (tileCoord >= size) (shapeCoord + 1, tileCoord - size)
+        else (shapeCoord, tileCoord)
+    val (realShapeX, realTileX) = toRealCoord(shapeX, tileX)
+    val (realShapeY, realTileY) = toRealCoord(shapeY, tileY)
+    if (realShapeX != shapeX || realShapeY != shapeY) {
+      val stream = getCurrent(realShapeX, realShapeY)
+      val requiredLevel = requiredNeighbourLevel(level)
+      stream(requiredLevel).noise(realTileX)(realTileY)
+    } else {
+      noise(tileX)(tileY)
+    }
+  }
 
   private def nextDetail(level: Int): Int = {
     level + (if(level % 2 == 0) 2 else 1)
   }
 
-  private def reqNeighbourLevel(level: Int): Int = {
+  private def requiredNeighbourLevel(level: Int): Int = {
     Math.max(if (level % 2 == 0) level - 1 else level - 2, 0)
   }
 
