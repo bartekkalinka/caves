@@ -43,7 +43,7 @@ object Noise {
 }
 
 class Terrain(neededLevel: Int) {
-  val noiseCache = new mutable.HashMap[(Int, Int), (Stream[Noise], Int)]
+  val noiseCache = new mutable.HashMap[(Int, Int), Stream[Noise]]
 
   def reset = {
     noiseCache.clear()
@@ -54,13 +54,13 @@ class Terrain(neededLevel: Int) {
     Stream.iterate(Noise.base)(_.nextLevel(localGet))
   }
 
-  private def getCurrent(x: Int, y: Int): (Stream[Noise], Int) = {
+  private def getCurrent(x: Int, y: Int): Stream[Noise] = {
     noiseCache.get(x, y) match {
-      case Some((stream, level)) => (stream, level)
+      case Some(stream) => stream
       case None =>
         val stream = noiseStream(x, y)
-        noiseCache.put((x, y), (stream, neededLevel))
-        (stream, neededLevel)
+        noiseCache.put((x, y), stream)
+        stream
     }
   }
 
@@ -72,9 +72,8 @@ class Terrain(neededLevel: Int) {
         val (xx, aa) = neighbourCoord(x, a)
         val (yy, bb) = neighbourCoord(y, b)
         if (xx != x || yy != y) {
-          val (stream, _) = getCurrent(xx, yy)
+          val stream = getCurrent(xx, yy)
           val reqLevel = reqNeighbourLevel(level)
-          setLevel(xx, yy, reqLevel)
           stream(reqLevel).noise(aa)(bb)
         } else {
           noise(a)(b)
@@ -89,16 +88,9 @@ class Terrain(neededLevel: Int) {
     Math.max(if (level % 2 == 0) level - 1 else level - 2, 0)
   }
 
-  private def setLevel(x: Int, y: Int, newLevel: Int): Unit = {
-    val (stream, level) = getCurrent(x, y)
-    if(level < newLevel) {
-      noiseCache.put((x, y), (stream, newLevel))
-    }
-  }
-
   def get(x: Int, y: Int): Noise = {
-    val (stream, level) = getCurrent(x, y)
-    stream(level)
+    val stream = getCurrent(x, y)
+    stream(neededLevel)
   }
 
 }
