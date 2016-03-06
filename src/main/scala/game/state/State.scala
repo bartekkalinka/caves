@@ -2,6 +2,7 @@ package game.state
 
 import game.Const
 import game.calculations.{ScreenCommon, Terrain}
+import shapegen.ShapeGenWrapper
 
 case class State(player: Player, score: Int, tilePixels: Int)
 {
@@ -22,11 +23,14 @@ case class State(player: Player, score: Int, tilePixels: Int)
 }
 
 object State {
-  def init: State = State(
-    player = Player.initPlayer(Const.initTilePixels),
-    score = 0,
-    tilePixels = Const.initTilePixels
-  )
+  def init: State = {
+    ShapeGenWrapper.reset
+    State(
+      player = Player.initPlayer(Const.initTilePixels),
+      score = 0,
+      tilePixels = Const.initTilePixels
+    )
+  }
 
   def iteration(state: State, input: Option[UserInput]): State = {
     val modsSuppliers: List[State => Seq[StateMod]] =
