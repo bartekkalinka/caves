@@ -1,5 +1,6 @@
 package websockets
 
+import akka.NotUsed
 import akka.actor.Cancellable
 import akka.stream.scaladsl._
 import akka.stream.stage.{DetachedContext, DetachedStage, DownstreamDirective, UpstreamDirective}
@@ -26,14 +27,14 @@ class LastElemOption[T]() extends DetachedStage[T, Option[T]] {
 object GameFlow {
   def mainTick: Source[Unit, Cancellable] = Source.tick(1 seconds, 50 millis, ())
 
-  private def zipWithNode[A](implicit builder: GraphDSL.Builder[Unit]): FanInShape2[Unit, A, A] =  {
+  private def zipWithNode[A](implicit builder: GraphDSL.Builder[NotUsed]): FanInShape2[Unit, A, A] =  {
     val zipWith = ZipWith[Unit, A, A]((a: Unit, i: A) => i)
     val zipWithSmallBuffer = zipWith.withAttributes(Attributes.inputBuffer(initial = 1, max = 1))
     builder.add(zipWithSmallBuffer)
   }
 
-  def flow(sender: String): Flow[UserInput, state.Broadcast, Unit] =
-    Flow.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[Unit] =>
+  def flow(sender: String): Flow[UserInput, state.Broadcast, NotUsed] =
+    Flow.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
       import GraphDSL.Implicits._
       val front = Flow[UserInput].map(identity)
       val frontNode = builder.add(front)
