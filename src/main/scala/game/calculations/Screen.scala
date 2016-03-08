@@ -12,12 +12,15 @@ object Screen {
       math.abs(coord._2 - Const.screenHeight / 2) < Const.screenHeight / 4
 
   def calculate(player: Player, tilePixels: Int): ShapeWithOffset = {
-    def shapeWithOffset(shape: Shape, cutParams: TerrainSliceWithCutParams): ShapeWithOffset =
-      ShapeWithOffset(shape, ScreenCommon(tilePixels).tileCoordAndOffset(cutParams.upperLeftPixelOffset).offset)
+//    def shapeWithOffset(shape: Shape, cutParams: TerrainSliceWithCutParams): ShapeWithOffset =
+//      ShapeWithOffset(shape, ScreenCommon(tilePixels).tileCoordAndOffset(cutParams.upperLeftPixelOffset).offset)
     val upperLeftCornerCoord = playerToLeftCorner(player)
     val lowerRightCornerCoord = (upperLeftCornerCoord._1 + Const.screenWidth + tilePixels, upperLeftCornerCoord._2 + Const.screenHeight + tilePixels)
-    val cutParams = Terrain(tilePixels).getSliceWithCutParams(upperLeftCornerCoord, lowerRightCornerCoord)
-    val shape = ShapeCutter(tilePixels).cut(cutParams)
-    shapeWithOffset(shape, cutParams)
+    //val cutParams = Terrain(tilePixels).getSliceWithCutParams(upperLeftCornerCoord, lowerRightCornerCoord)
+    //val shape = ShapeCutter(tilePixels).cut(cutParams)
+    val shape = ShapeCutter(tilePixels).cut(upperLeftCornerCoord, lowerRightCornerCoord)
+    val upperLeftPixelOffset = ScreenCommon(tilePixels).shapeCoordAndOffset(upperLeftCornerCoord).offset
+    ShapeWithOffset(shape, ScreenCommon(tilePixels).tileCoordAndOffset(upperLeftPixelOffset).offset)
+    //shapeWithOffset(shape, cutParams)
   }
 }
