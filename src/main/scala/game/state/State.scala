@@ -2,7 +2,6 @@ package game.state
 
 import game.Const
 import game.calculations.{ScreenCommon, Terrain}
-import shapegen.ShapeGenWrapper
 
 case class State(player: Player, score: Int, tilePixels: Int)
 {
@@ -24,7 +23,7 @@ case class State(player: Player, score: Int, tilePixels: Int)
 
 object State {
   def init: State = {
-    ShapeGenWrapper.reset
+    Terrain.terrain.reset
     State(
       player = Player.initPlayer(Const.initTilePixels),
       score = 0,

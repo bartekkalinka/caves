@@ -12,4 +12,6 @@ object Const {
   val zoomFactor = Math.sqrt(1.5)
   val screenWidth = 768
   val screenHeight = 500
+  val shapeGenNeededLevel = 6
+  val shapeGenThreshold = 500
 }
