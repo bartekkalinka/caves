@@ -14,7 +14,7 @@ object Screen {
   def calculate(player: Player, tilePixels: Int): ShapeWithOffset = {
     val upperLeftCornerCoord = playerToLeftCorner(player)
     val lowerRightCornerCoord = (upperLeftCornerCoord._1 + Const.screenWidth + tilePixels, upperLeftCornerCoord._2 + Const.screenHeight + tilePixels)
-    val shape = Terrain(tilePixels).cut(upperLeftCornerCoord, lowerRightCornerCoord)
+    val shape = Terrain.cut(upperLeftCornerCoord, lowerRightCornerCoord, tilePixels)
     ShapeWithOffset(shape, ScreenCommon(tilePixels).tileCoordAndOffset(upperLeftCornerCoord).offset)
   }
 }
