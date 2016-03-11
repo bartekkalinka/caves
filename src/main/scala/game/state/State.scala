@@ -23,7 +23,8 @@ case class State(player: Player, score: Int, tilePixels: Int)
 
 object State {
   def init: State = {
-    Terrain.terrain.reset
+    Terrain.generatedTerrain.reset
+    Terrain.testHoles
     State(
       player = Player.initPlayer(Const.initTilePixels),
       score = 0,
