@@ -9,21 +9,6 @@ import game._
 import game.state.{State, UserInput}
 import scala.concurrent.duration._
 
-class LastElemOption[T]() extends DetachedStage[T, Option[T]] {
-  private var currentValue: Option[T] = None
-
-  override def onPush(elem: T, ctx: DetachedContext[Option[T]]): UpstreamDirective = {
-    currentValue = Some(elem)
-    ctx.pull()
-  }
-
-  override def onPull(ctx: DetachedContext[Option[T]]): DownstreamDirective = {
-    val previousValue = currentValue
-    currentValue = None
-    ctx.push(previousValue)
-  }
-}
-
 object GameFlow {
   def mainTick: Source[Unit, Cancellable] = Source.tick(1 seconds, 50 millis, ())
 
@@ -38,7 +23,8 @@ object GameFlow {
       import GraphDSL.Implicits._
       val front = Flow[UserInput].map(identity)
       val frontNode = builder.add(front)
-      val sync = frontNode.outlet.transform(() => new LastElemOption[UserInput]())
+      val sync = frontNode.outlet.conflate((acc, elem) => elem)
+        .expand[Option[UserInput]](elem => Iterator(Some(elem)) ++ Iterator.continually(None))
       val zipNode = zipWithNode[Option[UserInput]]
       val state = Flow[Option[UserInput]].scan(State.init)(game.state.State.iteration)
       val stateNode = builder.add(state)
