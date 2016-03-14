@@ -15,7 +15,6 @@ function init() {
     initWebSocket();
 }
 function initWebSocket() {
-
     websocket = new WebSocket(wsUri);
     websocket.onopen = function(evt) {
         onOpen(evt)
@@ -32,6 +31,7 @@ function initWebSocket() {
 }
 // WEBSOCKET EVENTS MODULE
 function onOpen(evt) {
+  doSend("init");
 }
 function onClose(evt) {
 }
