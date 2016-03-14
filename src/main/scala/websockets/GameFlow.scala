@@ -21,18 +21,17 @@ object GameFlow {
   def flow(sender: String): Flow[UserInput, state.Broadcast, NotUsed] =
     Flow.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
       import GraphDSL.Implicits._
-      val front = Flow[UserInput].map(identity)
-      val frontNode = builder.add(front)
-      val sync = frontNode.outlet.conflate((acc, elem) => elem)
+      val sync = Flow[UserInput].conflate((acc, elem) => elem)
         .expand[Option[UserInput]](elem => Iterator(Some(elem)) ++ Iterator.continually(None))
+      val syncNode = builder.add(sync)
       val zipNode = zipWithNode[Option[UserInput]]
       val state = Flow[Option[UserInput]].scan(State.init)(game.state.State.iteration)
       val stateNode = builder.add(state)
       val broadcast = stateNode.outlet.map(game.state.Broadcast.fromState)
 
       mainTick ~> zipNode.in0
-      sync.outlet ~> zipNode.in1
+      syncNode.outlet ~> zipNode.in1
       zipNode.out ~> stateNode.in
-      FlowShape(frontNode.in, broadcast.outlet)
+      FlowShape(syncNode.in, broadcast.outlet)
   })
 }
