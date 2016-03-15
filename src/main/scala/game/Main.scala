@@ -3,6 +3,8 @@ package game
 import akka.actor._
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
+import scala.concurrent.Await
+import scala.concurrent.duration.Duration
 import scala.util.{Try, Success, Failure}
 import websockets._
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -21,10 +23,10 @@ object Main {
       case Success(binding) ⇒
         val localAddress = binding.localAddress
         println(s"Server is listening on ${localAddress.getHostName}:${localAddress.getPort}")
-        system.awaitTermination()
+        Await.result(system.whenTerminated, Duration.Inf)
       case Failure(e) ⇒
         println(s"Binding failed with ${e.getMessage}")
-        system.shutdown()
+        system.terminate()
     }
   }
 }
