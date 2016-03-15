@@ -14,6 +14,7 @@ object FaceDirection {
 
 sealed trait StateMod
 case class Zoom(in: Boolean) extends StateMod
+case class ToggleTunnel(horizontal: Boolean) extends StateMod
 sealed trait PlayerMod extends StateMod
 case class SetStandingOnGround(value: Boolean) extends PlayerMod
 sealed trait VectorMod extends PlayerMod
@@ -42,6 +43,7 @@ object Step {
     //case UserInput("zoomout") => Some(Zoom(false))
     case UserInput("rightKeyUp") => Some(SetPlayerHorizontalVector(0))
     case UserInput("leftKeyUp") => Some(SetPlayerHorizontalVector(0))
+    case UserInput("horizontal") => Some(ToggleTunnel(true))
     case _ => None
   }
 

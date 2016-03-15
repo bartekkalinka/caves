@@ -14,4 +14,5 @@ object Const {
   val screenHeight = 500
   val shapeGenNeededLevel = 6
   val shapeGenThreshold = 500
+  val tunnelWidth = 10
 }

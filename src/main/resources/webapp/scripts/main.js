@@ -77,6 +77,9 @@ function doKeyDown(e) {
   case 80: //p
       debug.togglePause();
       break;
+  case 72: //h
+      doSend("horizontal");
+      break;
   }
 }
 function doKeyUp(e) {

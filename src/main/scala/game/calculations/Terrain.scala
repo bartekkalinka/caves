@@ -5,14 +5,22 @@ import game.state.Shape
 
 object Terrain {
   val generatedTerrain = new shapegen.Terrain(Const.shapeGenNeededLevel)
-  val artificialHoles = new scala.collection.mutable.HashMap[(Int, Int), Unit]
+  var horizontalTunnel: Option[Int] = None
 
-  def testHoles = Stream.from(0).take(1000).map((_, 0)).foreach(artificialHoles.put(_, ()))
+  def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int) = {
+    val playerTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(playerCoord)
+    horizontalTunnel = horizontalTunnel match {
+      case None => Some(playerTileCoord.coord._2)
+      case _ => None
+    }
+  }
 
   def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = {
-    def isTileSetInArtificial: Boolean = {
+    def isTileEmptiedByTunnel: Boolean = {
       val CoordAndOffset(tileCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(mapPixelCoord)
-      artificialHoles.get(tileCoord).isEmpty
+      horizontalTunnel.exists(tunnelYCoord =>
+        Math.abs(tileCoord._2 - tunnelYCoord) <= Const.tunnelWidth / 2
+      )
     }
 
     def isTileSetInGenerated: Boolean = {
@@ -21,7 +29,7 @@ object Terrain {
       val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(shapePixelOffset)
       shape(shapeTilesCoord._1)(shapeTilesCoord._2) >= Const.shapeGenThreshold
     }
-    isTileSetInGenerated && isTileSetInArtificial
+    isTileSetInGenerated && !isTileEmptiedByTunnel
   }
 
   def cut(upperLeftCornerCoord: (Int, Int), lowerRightCornerCoord: (Int, Int), tilePixels: Int): Shape = {

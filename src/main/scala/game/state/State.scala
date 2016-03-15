@@ -13,6 +13,9 @@ case class State(player: Player, score: Int, tilePixels: Int)
         else math.floor(tilePixels / Const.zoomFactor).toInt
       val newPlayerOnScreen = ScreenCommon(newTilePixels).tileEven(player.onScreen)
       this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen, tilePixels = newTilePixels))
+    case ToggleTunnel(horizontal) =>
+      Terrain.toggleTunnel(horizontal, player.onMap, tilePixels)
+      this
   }
 
   def applyModsList(mods: Seq[StateMod]): State =
@@ -24,7 +27,6 @@ case class State(player: Player, score: Int, tilePixels: Int)
 object State {
   def init: State = {
     Terrain.generatedTerrain.reset
-    Terrain.testHoles
     State(
       player = Player.initPlayer(Const.initTilePixels),
       score = 0,
