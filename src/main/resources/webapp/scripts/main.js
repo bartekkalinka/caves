@@ -80,6 +80,9 @@ function doKeyDown(e) {
   case 72: //h
       doSend("horizontal");
       break;
+  case 86: //v
+      doSend("vertical");
+      break;
   }
 }
 function doKeyUp(e) {

@@ -6,20 +6,31 @@ import game.state.Shape
 object Terrain {
   val generatedTerrain = new shapegen.Terrain(Const.shapeGenNeededLevel)
   var horizontalTunnel: Option[Int] = None
+  var verticalTunnel: Option[Int] = None
 
   def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int) = {
     val playerTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(playerCoord)
-    horizontalTunnel = horizontalTunnel match {
-      case None => Some(playerTileCoord.coord._2)
-      case _ => None
-    }
+    if(horizontal) //TODO refactor
+      horizontalTunnel = horizontalTunnel match {
+        case None => Some(playerTileCoord.coord._2)
+        case _ => None
+      }
+    else
+      verticalTunnel = verticalTunnel match {
+        case None => Some(playerTileCoord.coord._1)
+        case _ => None
+      }
   }
 
   def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = {
     def isTileEmptiedByTunnel: Boolean = {
       val CoordAndOffset(tileCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(mapPixelCoord)
+      //TODO refactor
       horizontalTunnel.exists(tunnelYCoord =>
         Math.abs(tileCoord._2 - tunnelYCoord) <= Const.tunnelWidth / 2
+      ) ||
+      verticalTunnel.exists(tunnelXCoord =>
+        Math.abs(tileCoord._1 - tunnelXCoord) <= Const.tunnelWidth / 2
       )
     }
 

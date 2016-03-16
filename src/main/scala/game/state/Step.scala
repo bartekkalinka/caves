@@ -44,6 +44,7 @@ object Step {
     case UserInput("rightKeyUp") => Some(SetPlayerHorizontalVector(0))
     case UserInput("leftKeyUp") => Some(SetPlayerHorizontalVector(0))
     case UserInput("horizontal") => Some(ToggleTunnel(true))
+    case UserInput("vertical") => Some(ToggleTunnel(false))
     case _ => None
   }
 
