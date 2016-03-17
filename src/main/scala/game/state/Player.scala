@@ -1,7 +1,7 @@
 package game.state
 
 import game.Const
-import game.calculations.{ScreenCommon, CollisionDetection, Terrain}
+import game.calculations.{Tunnels, ScreenCommon, CollisionDetection, Terrain}
 
 case class PlayerDebugInfo(collisionLimitedVector: Option[(Int, Int)])
 
@@ -20,26 +20,24 @@ case class Player(
 
   def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(ScreenCommon.applyVector(onScreen, vector))
 
-  private def collisionVectorHypothesis(hypotheticalVector: (Int, Int)): Option[(Int, Int)] = {
-    if(hypotheticalVector != (0, 0)) {
-      val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
-      val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, hypotheticalVector))
-      if (collisionVectors.isEmpty)
-        None
-      else
-        Some(ScreenCommon.minimumVector(collisionVectors))
+  def isAtCollisionVector(tunnels: Tunnels): Option[(Int, Int)] = {
+    def collisionVectorHypothesis(hypotheticalVector: (Int, Int)): Option[(Int, Int)] = {
+      if(hypotheticalVector != (0, 0)) {
+        val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
+        val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, hypotheticalVector, tunnels))
+        if (collisionVectors.isEmpty)
+          None
+        else
+          Some(ScreenCommon.minimumVector(collisionVectors))
+      }
+      else None
     }
-    else None
-  }
-
-  private def enforcedCollisionVectorHypothesis(hypotheticalVector: (Int, Int)): (Int, Int) =
-    collisionVectorHypothesis(hypotheticalVector).getOrElse(hypotheticalVector)
-
-  def isAtCollisionVector: Option[(Int, Int)] = {
-      val straightOnTry = collisionVectorHypothesis(vector)
-      lazy val verticalTry = Some(enforcedCollisionVectorHypothesis((0, vector._2)))
-      lazy val horizontalTry = Some(enforcedCollisionVectorHypothesis((vector._1, 0)))
-      Stream(straightOnTry, verticalTry, horizontalTry).find(!_.contains((0, 0))).getOrElse(straightOnTry)
+    def enforcedCollisionVectorHypothesis(hypotheticalVector: (Int, Int)): (Int, Int) =
+      collisionVectorHypothesis(hypotheticalVector).getOrElse(hypotheticalVector)
+    val straightOnTry = collisionVectorHypothesis(vector)
+    lazy val verticalTry = Some(enforcedCollisionVectorHypothesis((0, vector._2)))
+    lazy val horizontalTry = Some(enforcedCollisionVectorHypothesis((vector._1, 0)))
+    Stream(straightOnTry, verticalTry, horizontalTry).find(!_.contains((0, 0))).getOrElse(straightOnTry)
   }
 
   def applyPlayerMod(mod: PlayerMod): Player = mod match {
@@ -62,7 +60,7 @@ case class Player(
   def moveToFreeSpotOnMap =
     this.copy(onMap =
       Stream.from(0).find(x =>
-        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector.isEmpty
+        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(Tunnels(None, None)).isEmpty
       ).map((_, 0)).getOrElse((0, 0)))
 
   def resetDebug: Player = copy(debugInfo = PlayerDebugInfo(None))

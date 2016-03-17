@@ -3,33 +3,33 @@ package game.calculations
 import game.Const
 import game.state.Shape
 
+case class Tunnels(horizontal: Option[Int], vertical: Option[Int])
+
 object Terrain {
   val generatedTerrain = new shapegen.Terrain(Const.shapeGenNeededLevel)
-  var horizontalTunnel: Option[Int] = None
-  var verticalTunnel: Option[Int] = None
 
-  def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int) = {
+  def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int, tunnels: Tunnels): Tunnels = {
     val playerTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(playerCoord)
     if(horizontal) //TODO refactor
-      horizontalTunnel = horizontalTunnel match {
-        case None => Some(playerTileCoord.coord._2)
-        case _ => None
+      tunnels match {
+        case Tunnels(None, v) => Tunnels(Some(playerTileCoord.coord._2), v)
+        case Tunnels(_, v) => Tunnels(None, v)
       }
     else
-      verticalTunnel = verticalTunnel match {
-        case None => Some(playerTileCoord.coord._1)
-        case _ => None
+      tunnels match {
+        case Tunnels(h, None) => Tunnels(h, Some(playerTileCoord.coord._1))
+        case Tunnels(h, _) => Tunnels(h, None)
       }
   }
 
-  def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = {
+  def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int, tunnels: Tunnels): Boolean = {
     def isTileEmptiedByTunnel: Boolean = {
       val CoordAndOffset(tileCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(mapPixelCoord)
       //TODO refactor
-      horizontalTunnel.exists(tunnelYCoord =>
+      tunnels.horizontal.exists(tunnelYCoord =>
         Math.abs(tileCoord._2 - tunnelYCoord) <= Const.tunnelWidth / 2
       ) ||
-      verticalTunnel.exists(tunnelXCoord =>
+      tunnels.vertical.exists(tunnelXCoord =>
         Math.abs(tileCoord._1 - tunnelXCoord) <= Const.tunnelWidth / 2
       )
     }
@@ -43,12 +43,12 @@ object Terrain {
     isTileSetInGenerated && !isTileEmptiedByTunnel
   }
 
-  def cut(upperLeftCornerCoord: (Int, Int), lowerRightCornerCoord: (Int, Int), tilePixels: Int): Shape = {
+  def cut(upperLeftCornerCoord: (Int, Int), lowerRightCornerCoord: (Int, Int), tilePixels: Int, tunnels: Tunnels): Shape = {
     val upperLeftTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(upperLeftCornerCoord).coord
     val lowerRightTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(lowerRightCornerCoord).coord
     Shape((upperLeftTileCoord._1 to lowerRightTileCoord._1).map(tileX =>
       (upperLeftTileCoord._2 to lowerRightTileCoord._2).map(tileY =>
-        isTileSet((tileX * tilePixels, tileY * tilePixels), tilePixels)).toArray).toArray
+        isTileSet((tileX * tilePixels, tileY * tilePixels), tilePixels, tunnels)).toArray).toArray
     )
   }
 }
