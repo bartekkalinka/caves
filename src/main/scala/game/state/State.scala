@@ -3,7 +3,7 @@ package game.state
 import game.Const
 import game.calculations.{Tunnels, ScreenCommon, Terrain}
 
-case class State(player: Player, score: Int, tilePixels: Int, tunnels: Tunnels)
+case class State(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
 {
   def applyMod(mod: StateMod): State = mod match {
     case playerMod: PlayerMod => this.copy(player = player.applyPlayerMod(playerMod))
@@ -14,7 +14,7 @@ case class State(player: Player, score: Int, tilePixels: Int, tunnels: Tunnels)
       val newPlayerOnScreen = ScreenCommon(newTilePixels).tileEven(player.onScreen)
       this.copy(tilePixels = newTilePixels, player = player.copy(onScreen = newPlayerOnScreen, tilePixels = newTilePixels))
     case ToggleTunnel(horizontal) =>
-      this.copy(tunnels = Terrain.toggleTunnel(horizontal, player.onMap, tilePixels, tunnels))
+      this.copy(terrain = terrain.toggleTunnel(horizontal, player.onMap, tilePixels))
   }
 
   def applyModsList(mods: Seq[StateMod]): State =
@@ -25,12 +25,12 @@ case class State(player: Player, score: Int, tilePixels: Int, tunnels: Tunnels)
 
 object State {
   def init: State = {
-    Terrain.generatedTerrain.reset
+    val initTerrain = Terrain.init
     State(
-      player = Player.initPlayer(Const.initTilePixels),
+      player = Player.init(Const.initTilePixels, initTerrain),
       score = 0,
       tilePixels = Const.initTilePixels,
-      tunnels = Tunnels(None, None)
+      terrain = initTerrain
     )
   }
 

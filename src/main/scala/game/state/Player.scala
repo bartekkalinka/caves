@@ -20,11 +20,11 @@ case class Player(
 
   def movePlayerOnScreenMod: SetPlayerScreenCoord = SetPlayerScreenCoord(ScreenCommon.applyVector(onScreen, vector))
 
-  def isAtCollisionVector(tunnels: Tunnels): Option[(Int, Int)] = {
+  def isAtCollisionVector(terrain: Terrain): Option[(Int, Int)] = {
     def collisionVectorHypothesis(hypotheticalVector: (Int, Int)): Option[(Int, Int)] = {
       if(hypotheticalVector != (0, 0)) {
         val playerFigureCorners = playerFigureLogicalCorners.map { case (x, y) => (onMap._1 + x * tilePixels, onMap._2 + y * tilePixels) }
-        val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(tilePixels).detectCollision(_, hypotheticalVector, tunnels))
+        val collisionVectors = playerFigureCorners.flatMap(CollisionDetection(terrain, tilePixels).detectCollision(_, hypotheticalVector))
         if (collisionVectors.isEmpty)
           None
         else
@@ -57,10 +57,10 @@ case class Player(
       copy(vector = (vector._1, vector._2 + acc))
   }
 
-  def moveToFreeSpotOnMap =
+  def moveToFreeSpotOnMap(terrain: Terrain) =
     this.copy(onMap =
       Stream.from(0).find(x =>
-        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(Tunnels(None, None)).isEmpty
+        this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(terrain).isEmpty
       ).map((_, 0)).getOrElse((0, 0)))
 
   def resetDebug: Player = copy(debugInfo = PlayerDebugInfo(None))
@@ -70,7 +70,7 @@ object Player {
   private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
     ScreenCommon(tilePixels).tileEven((Const.screenWidth / 2, Const.screenHeight / 2))
 
-  def initPlayer(initTilePixels: Int): Player =
+  def init(initTilePixels: Int, terrain: Terrain): Player =
     Player(
       onMap = (0, 0),
       vector = (0, 0),
@@ -79,6 +79,6 @@ object Player {
       onGround = false,
       tilePixels = initTilePixels,
       debugInfo = PlayerDebugInfo(None)
-    ).moveToFreeSpotOnMap
+    ).moveToFreeSpotOnMap(terrain)
 }
 

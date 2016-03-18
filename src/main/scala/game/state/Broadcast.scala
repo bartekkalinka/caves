@@ -29,7 +29,7 @@ object Broadcast
   }
 
   def fromState(state: State): Broadcast = {
-    val ShapeWithOffset(shape, offset) = Screen.calculate(state.player, state.tilePixels, state.tunnels)
+    val ShapeWithOffset(shape, offset) = Screen.calculate(state.player, state.tilePixels, state.terrain)
     val playerOnScreen = PlayerOnScreen.tupled(state.player.onScreen)
     Broadcast(
       playerOnScreen, state.player.faceDirection, state.tilePixels, packShape(shape), offset, debugInfo(state)

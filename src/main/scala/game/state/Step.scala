@@ -55,13 +55,13 @@ object Step {
     checkCollision(state).toList :+ checkIfStandingOnGround(state)
 
   private def checkCollision(state: State): Option[VectorMod] = {
-    val collision = state.player.isAtCollisionVector(state.tunnels)
+    val collision = state.player.isAtCollisionVector(state.terrain)
     collision.map(SetPlayerVectorLimitedByCollision)
   }
 
   private def checkIfStandingOnGround(state: State): SetStandingOnGround = {
     val fallALittleVector = (0, Const.moveStepInPixels)
-    val collisionWithGround = state.player.copy(vector = fallALittleVector).isAtCollisionVector(state.tunnels)
+    val collisionWithGround = state.player.copy(vector = fallALittleVector).isAtCollisionVector(state.terrain)
     SetStandingOnGround(collisionWithGround.contains((0, 0)))
   }
 
