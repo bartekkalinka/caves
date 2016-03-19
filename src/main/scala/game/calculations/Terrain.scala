@@ -3,25 +3,27 @@ package game.calculations
 import game.Const
 import game.state.Shape
 
-case class Tunnels(horizontal: Option[Int], vertical: Option[Int])
+case class Tunnel(coord: Option[Int], coordFun: ((Int, Int)) => Int)
+case class Tunnels(horizontal: Tunnel, vertical: Tunnel)
 
 object Terrain {
-  def init: Terrain = Terrain(new shapegen.Terrain(Const.shapeGenNeededLevel), Tunnels(None, None))
+  def init: Terrain = Terrain(new shapegen.Terrain(Const.shapeGenNeededLevel),
+    Tunnels(Tunnel(None, _._2), Tunnel(None, _._1)))
 }
 
 case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
   def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int): Terrain = {
     val playerTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(playerCoord)
-    def toggleOneTunnel(tunnel: Option[Int], coordFun: ((Int, Int)) => Int): Option[Int] =
-      tunnel match {
-        case None => Some(coordFun(playerTileCoord.coord))
+    def toggleOneTunnel(tunnel: Tunnel): Tunnel =
+      tunnel.copy(coord = tunnel.coord match {
+        case None => Some(tunnel.coordFun(playerTileCoord.coord))
         case _ => None
-      }
+      })
     Terrain(generatedTerrain = this.generatedTerrain, tunnels =
       if(horizontal) //TODO refactor
-        Tunnels(toggleOneTunnel(tunnels.horizontal, _._2), tunnels.vertical)
+        Tunnels(toggleOneTunnel(tunnels.horizontal), tunnels.vertical)
       else
-        Tunnels(tunnels.horizontal, toggleOneTunnel(tunnels.vertical, _._1))
+        Tunnels(tunnels.horizontal, toggleOneTunnel(tunnels.vertical))
     )
   }
 
@@ -29,10 +31,10 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
     def isTileEmptiedByTunnel: Boolean = {
       val CoordAndOffset(tileCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(mapPixelCoord)
       //TODO refactor
-      tunnels.horizontal.exists(tunnelYCoord =>
+      tunnels.horizontal.coord.exists(tunnelYCoord =>
         Math.abs(tileCoord._2 - tunnelYCoord) <= Const.tunnelWidth / 2
       ) ||
-      tunnels.vertical.exists(tunnelXCoord =>
+      tunnels.vertical.coord.exists(tunnelXCoord =>
         Math.abs(tileCoord._1 - tunnelXCoord) <= Const.tunnelWidth / 2
       )
     }
