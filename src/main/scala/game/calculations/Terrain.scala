@@ -12,17 +12,16 @@ object Terrain {
 case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
   def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int): Terrain = {
     val playerTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(playerCoord)
+    def toggleOneTunnel(tunnel: Option[Int], coordFun: ((Int, Int)) => Int): Option[Int] =
+      tunnel match {
+        case None => Some(coordFun(playerTileCoord.coord))
+        case _ => None
+      }
     Terrain(generatedTerrain = this.generatedTerrain, tunnels =
       if(horizontal) //TODO refactor
-        tunnels match {
-          case Tunnels(None, v) => Tunnels(Some(playerTileCoord.coord._2), v)
-          case Tunnels(_, v) => Tunnels(None, v)
-        }
+        Tunnels(toggleOneTunnel(tunnels.horizontal, _._2), tunnels.vertical)
       else
-        tunnels match {
-          case Tunnels(h, None) => Tunnels(h, Some(playerTileCoord.coord._1))
-          case Tunnels(h, _) => Tunnels(h, None)
-        }
+        Tunnels(tunnels.horizontal, toggleOneTunnel(tunnels.vertical, _._1))
     )
   }
 
