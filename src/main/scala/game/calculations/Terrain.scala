@@ -4,11 +4,11 @@ import game.Const
 import game.state.Shape
 
 case class Tunnel(coord: Option[Int], coordFun: ((Int, Int)) => Int)
-case class Tunnels(horizontal: Tunnel, vertical: Tunnel)
+case class Tunnels(byDir: Map[Boolean, Tunnel])
 
 object Terrain {
   def init: Terrain = Terrain(new shapegen.Terrain(Const.shapeGenNeededLevel),
-    Tunnels(Tunnel(None, _._2), Tunnel(None, _._1)))
+    Tunnels(Map(true -> Tunnel(None, _._2), false -> Tunnel(None, _._1))))
 }
 
 case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
@@ -20,23 +20,20 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
         case _ => None
       })
     Terrain(generatedTerrain = this.generatedTerrain, tunnels =
-      if(horizontal) //TODO refactor
-        Tunnels(toggleOneTunnel(tunnels.horizontal), tunnels.vertical)
-      else
-        Tunnels(tunnels.horizontal, toggleOneTunnel(tunnels.vertical))
-    )
+        tunnels.copy(byDir = tunnels.byDir +
+          (horizontal -> toggleOneTunnel(tunnels.byDir(horizontal)))
+    ))
   }
 
   def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = {
     def isTileEmptiedByTunnel: Boolean = {
       val CoordAndOffset(tileCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(mapPixelCoord)
-      //TODO refactor
-      tunnels.horizontal.coord.exists(tunnelYCoord =>
-        Math.abs(tileCoord._2 - tunnelYCoord) <= Const.tunnelWidth / 2
-      ) ||
-      tunnels.vertical.coord.exists(tunnelXCoord =>
-        Math.abs(tileCoord._1 - tunnelXCoord) <= Const.tunnelWidth / 2
-      )
+      Seq(true, false).map { dir =>
+        val tunnel = tunnels.byDir(dir)
+          tunnel.coord.exists(tunnelCoord =>
+          Math.abs(tunnel.coordFun(tileCoord) - tunnelCoord) <= Const.tunnelWidth / 2
+          )
+      }.reduce(_ || _)
     }
 
     def isTileSetInGenerated: Boolean = {
