@@ -2,7 +2,7 @@ package game.state
 
 import game.calculations.Screen
 
-case class Shape(tiles: Array[Array[Boolean]])
+case class Shape(tiles: Array[Array[Int]])
 case class ShapeWithOffset(shape: Shape, offset: (Int, Int))
 case class PackedShape(tiles: Array[String])
 case class PlayerOnScreen(x: Int, y: Int)
@@ -18,7 +18,7 @@ case class Broadcast(
 
 object Broadcast
 {
-  private def packShape(shape: Shape): PackedShape = PackedShape(shape.tiles.map(_.map(if(_) "1" else "0").reduce(_ + _)))
+  private def packShape(shape: Shape): PackedShape = PackedShape(shape.tiles.map(_.map(_.toString).reduce(_ + _)))
 
   private def debugInfo(state: State): String = {
     def booleanToString(value: Boolean, name: String): String = s"$name:${value.toString.substring(0, 1)}"

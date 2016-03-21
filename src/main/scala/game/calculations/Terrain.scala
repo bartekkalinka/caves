@@ -25,7 +25,7 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
     ))
   }
 
-  def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = {
+  def tileNumber(mapPixelCoord: (Int, Int), tilePixels: Int): Int = {
     def isTileEmptiedByTunnel: Boolean = {
       val CoordAndOffset(tileCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(mapPixelCoord)
       Seq(true, false).map { dir =>
@@ -42,15 +42,17 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
       val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(shapePixelOffset)
       shape(shapeTilesCoord._1)(shapeTilesCoord._2) >= Const.shapeGenThreshold
     }
-    isTileSetInGenerated && !isTileEmptiedByTunnel
+    if (isTileSetInGenerated && !isTileEmptiedByTunnel) 1 else 0
   }
+
+  def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = tileNumber(mapPixelCoord, tilePixels) == 1
 
   def cut(upperLeftCornerCoord: (Int, Int), lowerRightCornerCoord: (Int, Int), tilePixels: Int): Shape = {
     val upperLeftTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(upperLeftCornerCoord).coord
     val lowerRightTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(lowerRightCornerCoord).coord
     Shape((upperLeftTileCoord._1 to lowerRightTileCoord._1).map(tileX =>
       (upperLeftTileCoord._2 to lowerRightTileCoord._2).map(tileY =>
-        isTileSet((tileX * tilePixels, tileY * tilePixels), tilePixels)).toArray).toArray
+        tileNumber((tileX * tilePixels, tileY * tilePixels), tilePixels)).toArray).toArray
     )
   }
 }
