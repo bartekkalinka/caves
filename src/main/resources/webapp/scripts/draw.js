@@ -27,11 +27,17 @@ define( ['scripts/globals'], function (glob) {
       ctx.fillRect(0, 0, shapePixels(), shapePixels());
     }
     function isShapeTileSet(shape, j, i) {
-      return shape[j][i] === "1";
+      return shape[j][i] !== "0";
     }
+    function tileColor(shape, j, i) {
+      if(shape[j][i] === "1")
+        return "rgb(255,0,0)";
+      else if(shape[j][i] === "2")
+        return "rgb(128,0,0)"
+    }
+
     function drawShape(shape, offset) {
       clearShapeSquare();
-      ctx.fillStyle = "rgb(255,0,0)";
       var shapeTilesY = shape.length;
       var shapeTilesX = shape[0].length;
       var tilePixels = glob.tilePixels;
@@ -39,6 +45,7 @@ define( ['scripts/globals'], function (glob) {
       for(i=0; i<shapeTilesX; i+=1) {
         for(j=0; j<shapeTilesY; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
+            ctx.fillStyle = tileColor(shape, j, i);
             ctx.fillRect(
               tilePixels * j - offset[0],
               tilePixels * i - offset[1],
