@@ -42,7 +42,7 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
       val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(shapePixelOffset)
       shape(shapeTilesCoord._1)(shapeTilesCoord._2) >= Const.shapeGenThreshold
     }
-    if (isTileSetInGenerated && !isTileEmptiedByTunnel) 1 else 0
+    if(isTileSetInGenerated) { if(isTileEmptiedByTunnel) 2 else 1 } else 0
   }
 
   def isTileSet(mapPixelCoord: (Int, Int), tilePixels: Int): Boolean = tileNumber(mapPixelCoord, tilePixels) == 1
