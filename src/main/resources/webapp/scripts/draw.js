@@ -29,20 +29,34 @@ define( ['scripts/globals'], function (glob) {
     function isShapeTileSet(shape, j, i) {
       return shape[j][i] !== "0";
     }
-    function tileColor(shape, j, i) {
-      if(shape[j][i] === "1")
-        return "rgb(255,0,0)";
-      else if(shape[j][i] === "2")
-        return "rgb(128,0,0)"
-    }
-    function drawTile(shape, j, i, tilePixels, offset, ctx) {
-      ctx.fillStyle = tileColor(shape, j, i);
+    function drawTunnelTile(j, i, tilePixels, offset, ctx) {
+       ctx.strokeStyle = "rgb(128,0,0)";
+       ctx.lineWidth = 2;
+       ctx.beginPath();
+       ctx.moveTo(
+         tilePixels * j - offset[0],
+         tilePixels * i - offset[1]
+       );
+       ctx.lineTo(
+         tilePixels * (j + 1) - offset[0],
+         tilePixels * (i + 1) - offset[1]
+       );
+       ctx.stroke();
+     }
+    function drawStandardTile(j, i, tilePixels, offset, ctx) {
+      ctx.fillStyle = "rgb(255,0,0)";
       ctx.fillRect(
         tilePixels * j - offset[0],
         tilePixels * i - offset[1],
         tilePixels + 1,
         tilePixels + 1
       );
+    }
+    function drawTile(shape, j, i, tilePixels, offset, ctx) {
+      if(shape[j][i] === "1")
+        drawStandardTile(j, i, tilePixels, offset, ctx);
+      else if(shape[j][i] === "2")
+        drawTunnelTile(j, i, tilePixels, offset, ctx);
     }
     function drawShape(shape, offset) {
       clearShapeSquare();
