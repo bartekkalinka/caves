@@ -35,7 +35,15 @@ define( ['scripts/globals'], function (glob) {
       else if(shape[j][i] === "2")
         return "rgb(128,0,0)"
     }
-
+    function drawTile(shape, j, i, tilePixels, offset, ctx) {
+      ctx.fillStyle = tileColor(shape, j, i);
+      ctx.fillRect(
+        tilePixels * j - offset[0],
+        tilePixels * i - offset[1],
+        tilePixels + 1,
+        tilePixels + 1
+      );
+    }
     function drawShape(shape, offset) {
       clearShapeSquare();
       var shapeTilesY = shape.length;
@@ -45,13 +53,7 @@ define( ['scripts/globals'], function (glob) {
       for(i=0; i<shapeTilesX; i+=1) {
         for(j=0; j<shapeTilesY; j+=1) {
           if(isShapeTileSet(shape, j, i)) {
-            ctx.fillStyle = tileColor(shape, j, i);
-            ctx.fillRect(
-              tilePixels * j - offset[0],
-              tilePixels * i - offset[1],
-              tilePixels + 1,
-              tilePixels + 1
-            );
+            drawTile(shape, j, i, tilePixels, offset, ctx);
           }
         }
       }
