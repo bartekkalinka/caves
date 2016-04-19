@@ -24,8 +24,9 @@ case class State(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
 }
 
 object State {
+  val initTerrain = Terrain.init
+
   def init: State = {
-    val initTerrain = Terrain.init
     State(
       player = Player.init(Const.initTilePixels, initTerrain),
       score = 0,
