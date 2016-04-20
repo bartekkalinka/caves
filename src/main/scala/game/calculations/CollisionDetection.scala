@@ -1,20 +1,6 @@
 package game.calculations
 
-case class CollisionDetection(terrain: Terrain, tilePixels: Int) {
-  def detectCollision(pointBeforeMovement: (Int, Int), vectorToMove: (Int, Int)): Option[(Int, Int)] = {
-    val pointAfterMovement = ScreenCommon.applyVector(pointBeforeMovement, vectorToMove)
-    if(!terrain.isTileSet(pointAfterMovement, tilePixels)) {
-      None
-    }
-    else {
-      val movementLine = bresenhamLineAlgorithm((0, 0), vectorToMove)
-      movementLine.reverse.find { partialVector =>
-        val pointAfterPartialMovement = ScreenCommon.applyVector(pointBeforeMovement, partialVector)
-        !terrain.isTileSet(pointAfterPartialMovement, tilePixels)
-      }.orElse(Some(0, 0))
-    }
-  }
-
+object CollisionDetection {
   def bresenhamLineAlgorithm(from: (Int, Int), to: (Int, Int)): Seq[(Int, Int)] = {
     import scala.math.abs
 
@@ -36,5 +22,21 @@ case class CollisionDetection(terrain: Terrain, tilePixels: Int) {
       case (x, y) =>
         sx*x <= sx*to._1 && sy*y <= sy*to._2
     }.toList
+  }
+}
+
+case class CollisionDetection(terrain: Terrain, tilePixels: Int) {
+  def detectCollision(pointBeforeMovement: (Int, Int), vectorToMove: (Int, Int)): Option[(Int, Int)] = {
+    val pointAfterMovement = ScreenCommon.applyVector(pointBeforeMovement, vectorToMove)
+    if(!terrain.isTileSet(pointAfterMovement, tilePixels)) {
+      None
+    }
+    else {
+      val movementLine = CollisionDetection.bresenhamLineAlgorithm((0, 0), vectorToMove)
+      movementLine.reverse.find { partialVector =>
+        val pointAfterPartialMovement = ScreenCommon.applyVector(pointBeforeMovement, partialVector)
+        !terrain.isTileSet(pointAfterPartialMovement, tilePixels)
+      }.orElse(Some(0, 0))
+    }
   }
 }
