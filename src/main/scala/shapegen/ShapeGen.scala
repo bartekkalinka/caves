@@ -1,7 +1,7 @@
 
 package shapegen
 
-import scala.collection.mutable
+import scala.collection.concurrent.TrieMap
 import scala.util.Random
 
 case class Noise(noise: Array[Array[Int]], detail: Int, level: Int) {
@@ -43,7 +43,7 @@ object Noise {
 }
 
 class Terrain(neededLevel: Int) {
-  val noiseCache = new mutable.HashMap[(Int, Int), Stream[Noise]]
+  val noiseCache = new TrieMap[(Int, Int), Stream[Noise]]
 
   def reset = {
     noiseCache.clear()
