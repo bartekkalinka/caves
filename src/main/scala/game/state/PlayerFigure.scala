@@ -5,7 +5,7 @@ import game.calculations.{Tunnels, ScreenCommon, CollisionDetection, Terrain}
 
 case class PlayerDebugInfo(collisionLimitedVector: Option[(Int, Int)])
 
-case class Player(
+case class PlayerFigure(
   onMap: (Int, Int),
   vector: (Int, Int),
   onScreen: (Int, Int),
@@ -40,7 +40,7 @@ case class Player(
     Stream(straightOnTry, verticalTry, horizontalTry).find(!_.contains((0, 0))).getOrElse(straightOnTry)
   }
 
-  def applyPlayerMod(mod: PlayerMod): Player = mod match {
+  def applyPlayerMod(mod: PlayerMod): PlayerFigure = mod match {
     case SetPlayerMapCoord(newOnMap) =>
       copy(onMap = newOnMap)
     case SetPlayerScreenCoord(newOnScreen) =>
@@ -63,15 +63,15 @@ case class Player(
         this.copy(onMap = (x, 0), vector = (0, 1)).isAtCollisionVector(terrain).isEmpty
       ).map((_, 0)).getOrElse((0, 0)))
 
-  def resetDebug: Player = copy(debugInfo = PlayerDebugInfo(None))
+  def resetDebug: PlayerFigure = copy(debugInfo = PlayerDebugInfo(None))
 }
 
-object Player {
+object PlayerFigure {
   private def initPlayerOnScreen(tilePixels: Int): (Int, Int) =
     ScreenCommon(tilePixels).tileEven((Const.screenWidth / 2, Const.screenHeight / 2))
 
-  def init(initTilePixels: Int, terrain: Terrain): Player =
-    Player(
+  def init(initTilePixels: Int, terrain: Terrain): PlayerFigure =
+    PlayerFigure(
       onMap = (0, 0),
       vector = (0, 0),
       onScreen = initPlayerOnScreen(initTilePixels),

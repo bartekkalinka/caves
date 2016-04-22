@@ -3,7 +3,7 @@ package game.state
 import game.Const
 import game.calculations.{ScreenCommon, Terrain}
 
-case class SinglePlayerState(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
+case class SinglePlayerState(player: PlayerFigure, score: Int, tilePixels: Int, terrain: Terrain)
 {
   def applyMod(mod: StateMod): SinglePlayerState = mod match {
     case playerMod: PlayerMod => this.copy(player = player.applyPlayerMod(playerMod))
@@ -37,7 +37,7 @@ object SinglePlayerState {
   def init: SinglePlayerState = {
     val initTerrain = Terrain.init
     SinglePlayerState(
-      player = Player.init(Const.initTilePixels, initTerrain),
+      player = PlayerFigure.init(Const.initTilePixels, initTerrain),
       score = 0,
       tilePixels = Const.initTilePixels,
       terrain = initTerrain

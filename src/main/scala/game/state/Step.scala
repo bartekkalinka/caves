@@ -30,12 +30,12 @@ object Step {
   private def stateDrivenVectorMods(state: SinglePlayerState): Seq[VectorMod] =
     List(ModifyPlayerVerticalVectorBy(Const.gravityAcceleration)).filter(v => state.player.vector._2 <= Const.maxFallSpeed)
 
-  private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
+  private def movePlayerOnScreenIfStaysInTheMiddle(player: PlayerFigure): (Int, Int) = {
     val newPos = player.movePlayerOnScreenMod.onScreen
     if(Screen.isInTheMiddleOfScreen(newPos)) newPos else player.onScreen
   }
 
-  private def inputDrivenModOpt(player: Player, input: Option[UserInput]): Option[StateMod] = input.flatMap {
+  private def inputDrivenModOpt(player: PlayerFigure, input: Option[UserInput]): Option[StateMod] = input.flatMap {
     case UserInput("rightKeyDown") => Some(SetPlayerHorizontalVector(Const.moveStepInPixels, FaceDirection.Right))
     case UserInput("upKeyDown") => Some(SetPlayerVerticalVector(-2 * Const.moveStepInPixels)).filter(x => player.onGround)
     case UserInput("leftKeyDown") => Some(SetPlayerHorizontalVector(-Const.moveStepInPixels, FaceDirection.Left))
