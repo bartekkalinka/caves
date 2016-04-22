@@ -1,17 +1,16 @@
 package game.calculations
 
 import game.Const
-import game.state.Shape
+import game.state.{State, Shape}
 
 case class Tunnel(coord: Option[Int], coordFun: ((Int, Int)) => Int)
 case class Tunnels(byDir: Map[Boolean, Tunnel])
 
 object Terrain {
-  def init: Terrain = Terrain(new shapegen.Terrain(Const.shapeGenNeededLevel),
-    Tunnels(Map(true -> Tunnel(None, _._2), false -> Tunnel(None, _._1))))
+  def init: Terrain = Terrain(Tunnels(Map(true -> Tunnel(None, _._2), false -> Tunnel(None, _._1))))
 }
 
-case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
+case class Terrain(tunnels: Tunnels) {
   def toggleTunnel(horizontal: Boolean, playerCoord: (Int, Int), tilePixels: Int): Terrain = {
     val playerTileCoord = ScreenCommon(tilePixels).tileCoordAndOffset(playerCoord)
     def toggleOneTunnel(tunnel: Tunnel): Tunnel =
@@ -19,7 +18,7 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
         case None => Some(tunnel.coordFun(playerTileCoord.coord))
         case _ => None
       })
-    Terrain(generatedTerrain = this.generatedTerrain, tunnels =
+    Terrain(tunnels =
         tunnels.copy(byDir = tunnels.byDir +
           (horizontal -> toggleOneTunnel(tunnels.byDir(horizontal)))
     ))
@@ -38,7 +37,7 @@ case class Terrain(generatedTerrain: shapegen.Terrain, tunnels: Tunnels) {
 
     def isTileSetInGenerated: Boolean = {
       val CoordAndOffset(shapeCoord, shapePixelOffset) = ScreenCommon(tilePixels).shapeCoordAndOffset(mapPixelCoord)
-      val shape = generatedTerrain.get(shapeCoord._1, shapeCoord._2).noise
+      val shape = State.commonTerrain.get(shapeCoord._1, shapeCoord._2).noise
       val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(shapePixelOffset)
       shape(shapeTilesCoord._1)(shapeTilesCoord._2) >= Const.shapeGenThreshold
     }

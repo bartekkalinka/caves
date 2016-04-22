@@ -24,9 +24,10 @@ case class State(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
 }
 
 object State {
-  val initTerrain = Terrain.init
+  val commonTerrain = new shapegen.Terrain(Const.shapeGenNeededLevel)
 
   def init: State = {
+    val initTerrain = Terrain.init
     State(
       player = Player.init(Const.initTilePixels, initTerrain),
       score = 0,
