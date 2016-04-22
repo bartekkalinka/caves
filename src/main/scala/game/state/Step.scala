@@ -28,7 +28,7 @@ case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends CoordMod
 
 object Step {
   private def stateDrivenVectorMods(state: SinglePlayerState): Seq[VectorMod] =
-    List(ModifyPlayerVerticalVectorBy(Const.gravityAcceleration)).filter(v => state.player.vector._2 <= Const.maxFallSpeed)
+    List(ModifyPlayerVerticalVectorBy(Const.gravityAcceleration)).filter(v => state.playerFigure.vector._2 <= Const.maxFallSpeed)
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: PlayerFigure): (Int, Int) = {
     val newPos = player.movePlayerOnScreenMod.onScreen
@@ -49,24 +49,24 @@ object Step {
   }
 
   def vectorMods(input: Option[UserInput])(state: SinglePlayerState): Seq[StateMod] =
-    inputDrivenModOpt(state.player, input).toList ++ stateDrivenVectorMods(state)
+    inputDrivenModOpt(state.playerFigure, input).toList ++ stateDrivenVectorMods(state)
 
   def collisionMods(state: SinglePlayerState): Seq[PlayerMod] =
     checkCollision(state).toList :+ checkIfStandingOnGround(state)
 
   private def checkCollision(state: SinglePlayerState): Option[VectorMod] = {
-    val collision = state.player.isAtCollisionVector(state.terrain)
+    val collision = state.playerFigure.isAtCollisionVector(state.terrain)
     collision.map(SetPlayerVectorLimitedByCollision)
   }
 
   private def checkIfStandingOnGround(state: SinglePlayerState): SetStandingOnGround = {
     val fallALittleVector = (0, Const.moveStepInPixels)
-    val collisionWithGround = state.player.copy(vector = fallALittleVector).isAtCollisionVector(state.terrain)
+    val collisionWithGround = state.playerFigure.copy(vector = fallALittleVector).isAtCollisionVector(state.terrain)
     SetStandingOnGround(collisionWithGround.contains((0, 0)))
   }
 
   def coordMods(state: SinglePlayerState): Seq[CoordMod] = List(
-    state.player.movePlayerOnMapMod,
-    SetPlayerScreenCoord(movePlayerOnScreenIfStaysInTheMiddle(state.player))
+    state.playerFigure.movePlayerOnMapMod,
+    SetPlayerScreenCoord(movePlayerOnScreenIfStaysInTheMiddle(state.playerFigure))
   )
 }

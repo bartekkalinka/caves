@@ -22,17 +22,17 @@ object Broadcast
 
   private def debugInfo(state: SinglePlayerState): String = {
     def booleanToString(value: Boolean, name: String): String = s"$name:${value.toString.substring(0, 1)}"
-    val playerOnMapStr = s"crd:${state.player.onMap}"
-    val collisionVectorStr = "col:" + state.player.debugInfo.collisionLimitedVector.map(_.toString()).getOrElse("")
-    val onGroundStr = booleanToString(state.player.onGround, "gnd")
+    val playerOnMapStr = s"id: ${state.playerId} crd:${state.playerFigure.onMap}"
+    val collisionVectorStr = "col:" + state.playerFigure.debugInfo.collisionLimitedVector.map(_.toString()).getOrElse("")
+    val onGroundStr = booleanToString(state.playerFigure.onGround, "gnd")
     s"$playerOnMapStr $onGroundStr $collisionVectorStr"
   }
 
   def fromState(state: SinglePlayerState): Broadcast = {
-    val ShapeWithOffset(shape, offset) = Screen.calculate(state.player, state.tilePixels, state.terrain)
-    val playerOnScreen = PlayerOnScreen.tupled(state.player.onScreen)
+    val ShapeWithOffset(shape, offset) = Screen.calculate(state.playerFigure, state.tilePixels, state.terrain)
+    val playerOnScreen = PlayerOnScreen.tupled(state.playerFigure.onScreen)
     Broadcast(
-      playerOnScreen, state.player.faceDirection, state.tilePixels, packShape(shape), offset, debugInfo(state)
+      playerOnScreen, state.playerFigure.faceDirection, state.tilePixels, packShape(shape), offset, debugInfo(state)
     )
   }
 }
