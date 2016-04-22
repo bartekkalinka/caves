@@ -27,7 +27,7 @@ case class SetPlayerMapCoord(onMap: (Int, Int)) extends CoordMod
 case class SetPlayerScreenCoord(onScreen: (Int, Int)) extends CoordMod
 
 object Step {
-  private def stateDrivenVectorMods(state: State): Seq[VectorMod] =
+  private def stateDrivenVectorMods(state: SinglePlayerState): Seq[VectorMod] =
     List(ModifyPlayerVerticalVectorBy(Const.gravityAcceleration)).filter(v => state.player.vector._2 <= Const.maxFallSpeed)
 
   private def movePlayerOnScreenIfStaysInTheMiddle(player: Player): (Int, Int) = {
@@ -48,24 +48,24 @@ object Step {
     case _ => None
   }
 
-  def vectorMods(input: Option[UserInput])(state: State): Seq[StateMod] =
+  def vectorMods(input: Option[UserInput])(state: SinglePlayerState): Seq[StateMod] =
     inputDrivenModOpt(state.player, input).toList ++ stateDrivenVectorMods(state)
 
-  def collisionMods(state: State): Seq[PlayerMod] =
+  def collisionMods(state: SinglePlayerState): Seq[PlayerMod] =
     checkCollision(state).toList :+ checkIfStandingOnGround(state)
 
-  private def checkCollision(state: State): Option[VectorMod] = {
+  private def checkCollision(state: SinglePlayerState): Option[VectorMod] = {
     val collision = state.player.isAtCollisionVector(state.terrain)
     collision.map(SetPlayerVectorLimitedByCollision)
   }
 
-  private def checkIfStandingOnGround(state: State): SetStandingOnGround = {
+  private def checkIfStandingOnGround(state: SinglePlayerState): SetStandingOnGround = {
     val fallALittleVector = (0, Const.moveStepInPixels)
     val collisionWithGround = state.player.copy(vector = fallALittleVector).isAtCollisionVector(state.terrain)
     SetStandingOnGround(collisionWithGround.contains((0, 0)))
   }
 
-  def coordMods(state: State): Seq[CoordMod] = List(
+  def coordMods(state: SinglePlayerState): Seq[CoordMod] = List(
     state.player.movePlayerOnMapMod,
     SetPlayerScreenCoord(movePlayerOnScreenIfStaysInTheMiddle(state.player))
   )

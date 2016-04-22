@@ -1,11 +1,11 @@
 package game.state
 
 import game.Const
-import game.calculations.{Tunnels, ScreenCommon, Terrain}
+import game.calculations.{ScreenCommon, Terrain}
 
-case class State(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
+case class SinglePlayerState(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
 {
-  def applyMod(mod: StateMod): State = mod match {
+  def applyMod(mod: StateMod): SinglePlayerState = mod match {
     case playerMod: PlayerMod => this.copy(player = player.applyPlayerMod(playerMod))
     case Zoom(in) =>
       val newTilePixels =
@@ -17,18 +17,26 @@ case class State(player: Player, score: Int, tilePixels: Int, terrain: Terrain)
       this.copy(terrain = terrain.toggleTunnel(horizontal, player.onMap, tilePixels))
   }
 
-  def applyModsList(mods: Seq[StateMod]): State =
+  def applyModsList(mods: Seq[StateMod]): SinglePlayerState =
     mods.foldLeft(this)((st, mod) => st.applyMod(mod))
 
-  def resetDebug: State = copy(player = player.resetDebug)
+  def resetDebug: SinglePlayerState = copy(player = player.resetDebug)
+
+  def iteration(input: Option[UserInput]): SinglePlayerState = {
+    val modsSuppliers: List[SinglePlayerState => Seq[StateMod]] =
+      List(
+        Step.vectorMods(input),
+        Step.collisionMods,
+        Step.coordMods
+      )
+    modsSuppliers.foldLeft(resetDebug)((st, modsSupplier) => st.applyModsList(modsSupplier(st)))
+  }
 }
 
-object State {
-  val commonTerrain = new shapegen.Terrain(Const.shapeGenNeededLevel)
-
-  def init: State = {
+object SinglePlayerState {
+  def init: SinglePlayerState = {
     val initTerrain = Terrain.init
-    State(
+    SinglePlayerState(
       player = Player.init(Const.initTilePixels, initTerrain),
       score = 0,
       tilePixels = Const.initTilePixels,
@@ -36,13 +44,5 @@ object State {
     )
   }
 
-  def iteration(state: State, input: Option[UserInput]): State = {
-    val modsSuppliers: List[State => Seq[StateMod]] =
-      List(
-        Step.vectorMods(input),
-        Step.collisionMods,
-        Step.coordMods
-      )
-    modsSuppliers.foldLeft(state.resetDebug)((st, modsSupplier) => st.applyModsList(modsSupplier(st)))
-  }
+  def iteration(state: SinglePlayerState, input: Option[UserInput]): SinglePlayerState = state.iteration(input)
 }

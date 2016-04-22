@@ -1,7 +1,7 @@
 package game.calculations
 
 import game.Const
-import game.state.{State, Shape}
+import game.state.{GlobalState, SinglePlayerState, Shape}
 
 case class Tunnel(coord: Option[Int], coordFun: ((Int, Int)) => Int)
 case class Tunnels(byDir: Map[Boolean, Tunnel])
@@ -37,7 +37,7 @@ case class Terrain(tunnels: Tunnels) {
 
     def isTileSetInGenerated: Boolean = {
       val CoordAndOffset(shapeCoord, shapePixelOffset) = ScreenCommon(tilePixels).shapeCoordAndOffset(mapPixelCoord)
-      val shape = State.commonTerrain.get(shapeCoord._1, shapeCoord._2).noise
+      val shape = GlobalState.generatedTerrain.get(shapeCoord._1, shapeCoord._2).noise
       val CoordAndOffset(shapeTilesCoord, _) = ScreenCommon(tilePixels).tileCoordAndOffset(shapePixelOffset)
       shape(shapeTilesCoord._1)(shapeTilesCoord._2) >= Const.shapeGenThreshold
     }

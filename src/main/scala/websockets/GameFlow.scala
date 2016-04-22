@@ -6,7 +6,7 @@ import akka.stream.scaladsl._
 import akka.stream.stage.{DetachedContext, DetachedStage, DownstreamDirective, UpstreamDirective}
 import akka.stream.{FlowShape, Attributes, FanInShape2}
 import game._
-import game.state.{State, UserInput}
+import game.state.{SinglePlayerState, UserInput}
 import scala.concurrent.duration._
 
 object GameFlow {
@@ -26,8 +26,8 @@ object GameFlow {
          .expand[Option[UserInput]](elem => Iterator(Some(elem)) ++ Iterator.continually(None))
       )
       val zipNode = zipWithNode[Option[UserInput]]
-      val stateNode = builder.add(Flow[Option[UserInput]].scan(State.init)(game.state.State.iteration))
-      val broadcastNode = builder.add(Flow[State].map(game.state.Broadcast.fromState))
+      val stateNode = builder.add(Flow[Option[UserInput]].scan(SinglePlayerState.init)(game.state.SinglePlayerState.iteration))
+      val broadcastNode = builder.add(Flow[SinglePlayerState].map(game.state.Broadcast.fromState))
 
       mainTick ~> zipNode.in0
       syncNode.outlet ~> zipNode.in1
