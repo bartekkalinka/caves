@@ -22,10 +22,13 @@ object Broadcast
 
   private def debugInfo(state: SinglePlayerState): String = {
     def booleanToString(value: Boolean, name: String): String = s"$name:${value.toString.substring(0, 1)}"
-    val playerOnMapStr = s"id: ${state.playerId} crd:${state.playerFigure.onMap}"
+    val playersCoords =
+      GlobalState.getPositionsWithinRectangle((-200000, -200000), (200000, 200000)).map { case (id, crd) =>
+        s"id:$id crd:$crd"
+      }.mkString(" ")
     val collisionVectorStr = "col:" + state.playerFigure.debugInfo.collisionLimitedVector.map(_.toString()).getOrElse("")
     val onGroundStr = booleanToString(state.playerFigure.onGround, "gnd")
-    s"$playerOnMapStr $onGroundStr $collisionVectorStr"
+    s"$playersCoords $onGroundStr $collisionVectorStr"
   }
 
   def fromState(state: SinglePlayerState): Broadcast = {
