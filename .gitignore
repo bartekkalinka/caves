@@ -4,3 +4,8 @@ target/
 *~
 .idea
 *.txt
+.ensime
+.ensime_cache/
+**/*~
+**/#*#
+**/.#*
