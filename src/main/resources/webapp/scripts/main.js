@@ -35,12 +35,20 @@ function onOpen(evt) {
 }
 function onClose(evt) {
 }
+function drawOtherPlayers(otherPlayers) {
+  var i, op;
+  for(i = 0; i < otherPlayers.length; i++) {
+    op = otherPlayers[i];
+    draw.drawPlayer(op[0], op[1], "game.state.FaceDirection.Straight");
+  }
+}
 function onMessage(evt) {
    var obj = JSON.parse(evt.data);
    glob.tilePixels = obj.tilePixels;
    draw.clearCanvas();
    draw.drawShape(obj.shape.tiles, obj.offset);
    draw.drawPlayer(obj.player.x, obj.player.y, obj.faceDirection[0]);
+   drawOtherPlayers(obj.otherPlayers);
    debug.handleMessage(obj.debugInfo);
 }
 function onError(evt) {
