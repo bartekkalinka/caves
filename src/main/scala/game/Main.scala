@@ -3,6 +3,7 @@ package game
 import akka.actor._
 import akka.http.scaladsl.Http
 import akka.stream.ActorMaterializer
+import game.multiplayer.DeleteIdleActor
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
 import scala.util.{Try, Success, Failure}
@@ -18,6 +19,8 @@ object Main {
     val port = Try(sys.env("PORT").toInt).toOption.getOrElse(8080)
     val service = new Webservice()
     val bindingF = Http().bindAndHandle(service.route, interface, port)
+
+    system.actorOf(DeleteIdleActor.props(), "deleteIdle")
 
     bindingF.onComplete {
       case Success(binding) ⇒
