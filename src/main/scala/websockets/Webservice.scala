@@ -9,7 +9,7 @@ import akka.stream.stage._
 import akka.http.scaladsl.server.Directives
 import akka.stream.Materializer
 import akka.stream.scaladsl.Flow
-import game.state.{Broadcast, UserInput}
+import game.singleplayer.{Broadcast, UserInput}
 
 import upickle._
 

@@ -1,7 +1,8 @@
 package game.calculations
 
 import game.Const
-import game.state.{GlobalState, ScreenData, PlayerFigure}
+import game.multiplayer.GlobalState
+import game.singleplayer.{ScreenData, PlayerFigure}
 
 object Screen {
   def isInTheMiddleOfScreen(coord: (Int, Int)): Boolean =

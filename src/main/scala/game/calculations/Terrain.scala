@@ -1,7 +1,8 @@
 package game.calculations
 
 import game.Const
-import game.state.{GlobalState, SinglePlayerState, Shape}
+import game.multiplayer.GlobalState
+import game.singleplayer.{SinglePlayerState, Shape}
 
 case class Tunnel(coord: Option[Int], coordFun: ((Int, Int)) => Int)
 case class Tunnels(byDir: Map[Boolean, Tunnel])

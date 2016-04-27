@@ -39,7 +39,7 @@ function drawOtherPlayers(otherPlayers) {
   var i, op;
   for(i = 0; i < otherPlayers.length; i++) {
     op = otherPlayers[i];
-    draw.drawPlayer(op[0], op[1], "game.state.FaceDirection.Straight");
+    draw.drawPlayer(op[0], op[1], "game.singleplayer.FaceDirection.Straight");
   }
 }
 function onMessage(evt) {

@@ -87,11 +87,11 @@ define( ['scripts/globals'], function (glob) {
 
     function drawPlayer(x, y, faceDirection) {
       var playerImage;
-      if(faceDirection == "game.state.FaceDirection.Straight")
+      if(faceDirection == "game.singleplayer.FaceDirection.Straight")
         playerImage = playerFrontImage;
-      else if(faceDirection == "game.state.FaceDirection.Left")
+      else if(faceDirection == "game.singleplayer.FaceDirection.Left")
         playerImage = playerLeftImage;
-      else if(faceDirection == "game.state.FaceDirection.Right")
+      else if(faceDirection == "game.singleplayer.FaceDirection.Right")
         playerImage = playerRightImage;
       ctx.drawImage(playerImage, x, y, glob.tilePixels, glob.tilePixels * 2);
     }

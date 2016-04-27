@@ -6,7 +6,7 @@ import akka.stream.scaladsl._
 import akka.stream.stage.{DetachedContext, DetachedStage, DownstreamDirective, UpstreamDirective}
 import akka.stream.{FlowShape, Attributes, FanInShape2}
 import game._
-import game.state.{SinglePlayerState, UserInput}
+import game.singleplayer.{SinglePlayerState, UserInput}
 import scala.concurrent.duration._
 
 object GameFlow {
@@ -16,7 +16,7 @@ object GameFlow {
     builder.add(zipWithSmallBuffer)
   }
 
-  def flow(sender: String): Flow[UserInput, state.Broadcast, NotUsed] =
+  def flow(sender: String): Flow[UserInput, singleplayer.Broadcast, NotUsed] =
     Flow.fromGraph(GraphDSL.create() { implicit builder: GraphDSL.Builder[NotUsed] =>
       import GraphDSL.Implicits._
       val mainTick = Source.tick(1 seconds, 50 millis, ())
@@ -26,8 +26,8 @@ object GameFlow {
          .expand[Option[UserInput]](elem => Iterator(Some(elem)) ++ Iterator.continually(None))
       )
       val zipNode = zipWithNode[Option[UserInput]]
-      val stateNode = builder.add(Flow[Option[UserInput]].scan(SinglePlayerState.init)(game.state.SinglePlayerState.iteration))
-      val broadcastNode = builder.add(Flow[SinglePlayerState].map(game.state.Broadcast.fromState))
+      val stateNode = builder.add(Flow[Option[UserInput]].scan(SinglePlayerState.init)(game.singleplayer.SinglePlayerState.iteration))
+      val broadcastNode = builder.add(Flow[SinglePlayerState].map(game.singleplayer.Broadcast.fromState))
 
       mainTick ~> zipNode.in0
       syncNode.outlet ~> zipNode.in1

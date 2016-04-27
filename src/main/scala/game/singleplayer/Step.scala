@@ -1,4 +1,4 @@
-package game.state
+package game.singleplayer
 
 import game.Const
 import game.calculations.Screen

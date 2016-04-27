@@ -1,6 +1,7 @@
-package game.state
+package game.singleplayer
 
 import game.calculations.Screen
+import game.multiplayer.GlobalState
 
 case class Shape(tiles: Array[Array[Int]])
 case class ScreenData(shape: Shape, offset: (Int, Int), otherPlayers: Seq[(Int, Int)])

@@ -1,7 +1,8 @@
-package game.state
+package game.singleplayer
 
 import game.Const
 import game.calculations.{ScreenCommon, Terrain}
+import game.multiplayer.GlobalState
 
 case class SinglePlayerState(playerId: Long, playerFigure: PlayerFigure, score: Int, tilePixels: Int, terrain: Terrain)
 {
