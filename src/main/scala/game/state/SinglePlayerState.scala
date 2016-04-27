@@ -47,7 +47,7 @@ object SinglePlayerState {
 
   def iteration(state: SinglePlayerState, input: Option[UserInput]): SinglePlayerState = {
     val newState = state.iteration(input)
-    GlobalState.putPosition(newState.playerId, newState.playerFigure.onMap)
+    GlobalState.publishState(newState.playerId, newState.playerFigure.onMap)
     newState
   }
 }

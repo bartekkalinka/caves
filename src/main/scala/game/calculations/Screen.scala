@@ -15,7 +15,7 @@ object Screen {
     val lowerRightCornerCoord = (upperLeftCornerCoord._1 + Const.screenWidth + tilePixels, upperLeftCornerCoord._2 + Const.screenHeight + tilePixels)
     def otherPlayers = {
       val playersOnScreen = GlobalState.getPositionsWithinRectangle(upperLeftCornerCoord, lowerRightCornerCoord)
-      playersOnScreen.filter(_._1 != playerId).map { case (_, (x, y)) => (x - upperLeftCornerCoord._1, y - upperLeftCornerCoord._2)}
+      playersOnScreen.filter(_._1 != playerId).map(_._2.position).map { case (x, y) => (x - upperLeftCornerCoord._1, y - upperLeftCornerCoord._2)}
     }
     val shape = terrain.cut(upperLeftCornerCoord, lowerRightCornerCoord, tilePixels)
     ScreenData(shape, ScreenCommon(tilePixels).tileCoordAndOffset(upperLeftCornerCoord).offset, otherPlayers)
