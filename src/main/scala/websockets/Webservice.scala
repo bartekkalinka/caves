@@ -32,16 +32,4 @@ class Webservice(implicit fm: Materializer, system: ActorSystem) extends Directi
       .collect { case TextMessage.Strict(msg) => UserInput(msg) } // unpack incoming WS text messages...
       .via(GameFlow.flow(sender)) // ... and route them through the gameFlow ...
       .map{ case b: Broadcast => TextMessage.Strict(write(b)) } // ... pack outgoing messages into WS JSON messages ...
-      .via(reportErrorsFlow) // ... then log any processing errors on stdin
-
-  def reportErrorsFlow[T]: Flow[T, T, NotUsed] =
-    Flow[T]
-      .transform(() => new PushStage[T, T] {
-        def onPush(elem: T, ctx: Context[T]): SyncDirective = ctx.push(elem)
-
-        override def onUpstreamFailure(cause: Throwable, ctx: Context[T]): TerminationDirective = {
-          println(s"WS stream failed with $cause")
-          super.onUpstreamFailure(cause, ctx)
-        }
-      })
 }
